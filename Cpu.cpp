@@ -1,5 +1,4 @@
 #include "Cpu.h"
-#include "Memory.h"
 
 const std::array<uint16_t, 45> program = {
 	0x149F, // addi $v0, $v0, 31
@@ -16,7 +15,7 @@ const std::array<uint16_t, 45> program = {
 	0x316C, // sll $v3, $v2, 4
 	0x1FC5, // addi $a1, $a1, 5
 	//WHILE:
-	0x8E00, // blez $a1, EXIT
+	0x8E00, // blez $a1, EXIT (PC + 2 + Offset() << 2) = PC relative location
 	0x024C, // xor $t1, $t1, $t1
 	0x1241, // addi $t1, $t1, 1
 	0x0E79, // sub $a1, $a1, $t1
@@ -26,7 +25,7 @@ const std::array<uint16_t, 45> program = {
 	0x304C, // sll $t1, $t1, 4
 	0x9000, // beq $t0, $t1, ELSE
 	0x2208, // slt $t1, $t1, $t0
-	0x8204, // blez $t1, CONT
+	0x8202, // blez $t1, CONT (PC + 2 + Offset() << 2) = PC relative location
 	0xA000, // j ELSE
 	//CONT:
 	0x5093, // srl $v0, $v0, 3
@@ -38,7 +37,7 @@ const std::array<uint16_t, 45> program = {
 	0x304F, // sll $t1, $t1, 7
 	0x3049, // sll $t1, $t1, 1
 	0x6A40, // sw $t1, 0($a0)
-	0xA000, // j PELSE
+	0xA05C, // j PELSE (PC + 2)|Upper 4b + Offset(92) = Address
 	//ELSE:
 	0x4122, // sla $v2, $v2, 2
 	0x0B2C, // xor $v3, $v3, $v2
@@ -49,7 +48,7 @@ const std::array<uint16_t, 45> program = {
 	0x6A40, // sw $t1, 0($a0)
 	//PELSE:
 	0x1D82, // addi $a0, $a0, 2
-	0xA000, // j WHILE
+	0xA018, // j WHILE
 	//EXIT:
 	0xFFFF // This is a psuedo-instruction that will signal the end of the code for our processor
 };
@@ -87,13 +86,19 @@ void CPU::Run(){
 	while (true){
 		switch (state){
 			case RUN:
-				instr = fetchInstr();
-				decodeInstr(instr);
+				fetchdec_buf[0] = fetchInstr(); // IF/ID_new
+				decodeInstr();
+				/* 
+				Hazard Detect
+				Exec
+				Mem
+				WB
+				*/
 
 				break;
 			case STEP:
-				instr = fetchInstr();
-				decodeInstr(instr);
+				fetchdec_buf[0] = fetchInstr(); // IF/ID_new
+				decodeInstr();
 
 				getchar(); //Wait for the user to input something before we step again
 				break;
@@ -106,7 +111,7 @@ void CPU::Run(){
 
 uint16_t CPU::fetchInstr(){
 	uint16_t instr = Memory::instr[pc];
-	pc += 1; //We're incrementing by 1 here, because we work with 2 bytes instead of 1 at a time
+	pc += 1; // We're incrementing by 1 here, because we work with 2 bytes instead of 1 at a time
 	return instr;
 }
 
@@ -115,7 +120,8 @@ R-type: 4b op, 3b rs, 3b rt, 3b rt, 3b func
 I-type: 4b op, 3b rs, 3b rt, 6b imm
 J-type: 4b op, 12b imm
 */
-void CPU::decodeInstr(uint16_t instr){
+void CPU::decodeInstr(){
+	uint16_t instr = fetchdec_buf[0];
 	uint16_t opcode = (instr & 0xFF00) >> 12;
 	
 	uint16_t sreg = (instr & 0x0E00) >> 9;
@@ -125,8 +131,18 @@ void CPU::decodeInstr(uint16_t instr){
 	uint16_t imm6 = instr & 0x003F;
 	uint16_t imm12 = instr & 0x0FFF;
 
+
+	decexe_buf[0][0] = registers[sreg];
+	decexe_buf[0][1] = registers[treg];
+	decexe_buf[0][2] = registers[dreg];
+	decexe_buf[0][3] = shfunc;
+	decexe_buf[0][4] = imm6;
+	decexe_buf[0][5] = imm12;
+
+	/*Control Unit*/
 	switch (opcode){
 		case 0x0: //ALU Func
+			ALU::runWithFunc();
 			break;
 		case 0x1: //ADDI
 			break;
@@ -153,6 +169,12 @@ void CPU::decodeInstr(uint16_t instr){
 			//Throw some kind of Invalid Instruction error, print the PC & instruction
 			break;
 	}
+	
+	fetchdec_buf[1] = instr; //Update IF/ID_old
+}
+
+void CPU::writeback(){
+
 }
 
 

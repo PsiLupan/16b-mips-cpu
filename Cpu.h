@@ -1,10 +1,14 @@
 #include <array>
 #include <cstdint>
 
+#include "Alu.h"
+#include "Memory.h"
+
 class CPU {
 private:
 	static uint16_t fetchInstr();
-	static void decodeInstr(uint16_t instr);
+	static void decodeInstr();
+	static void writeback();
 
 	enum CPU_STATE {
 		RUN, STEP, EXIT
@@ -18,6 +22,9 @@ public:
 	static CPU* getInstance();
 
 	static std::array<uint16_t, 8> registers;
+	static uint16_t fetchdec_buf[2];
+	static uint16_t decexe_buf[2][6];
+	static uint16_t exewb_buf[2][3];
 
 	static uint16_t pc;
 };
