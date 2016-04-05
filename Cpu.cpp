@@ -71,9 +71,11 @@ void CPU::Init(){
 	Memory::data[8] = 0x00F0;
 	Memory::data[9] = 0x00FF;
 
-	//Set following state based on user input for STEP or a FULLRUN
-	state = EXIT;
-	
+	//Set step based on user input
+	g_step = false;
+
+	state = RUN;
+
 	Run();
 }
 
@@ -82,25 +84,17 @@ void CPU::Shutdown(){
 }
 
 void CPU::Run(){
-	uint16_t instr;
 	while (true){
 		switch (state){
 			case RUN:
 				fetchdec_buf[0] = fetchInstr(); // IF/ID_new
 				decodeInstr();
-				/* 
-				Hazard Detect
-				Exec
-				Mem
-				WB
-				*/
-
-				break;
-			case STEP:
-				fetchdec_buf[0] = fetchInstr(); // IF/ID_new
-				decodeInstr();
-
-				getchar(); //Wait for the user to input something before we step again
+				control();
+				writeback();
+				
+				if (g_step){
+					getchar(); //Wait for the user to input something before we step again
+				}
 				break;
 			case EXIT:
 				return; //Exit our loop
@@ -109,13 +103,14 @@ void CPU::Run(){
 	Shutdown();
 }
 
+/*Instruction Fetch*/
 uint16_t CPU::fetchInstr(){
 	uint16_t instr = Memory::instr[pc];
 	pc += 1; // We're incrementing by 1 here, because we work with 2 bytes instead of 1 at a time
 	return instr;
 }
 
-/* 
+/* Instruction Decode
 R-type: 4b op, 3b rs, 3b rt, 3b rt, 3b func
 I-type: 4b op, 3b rs, 3b rt, 6b imm
 J-type: 4b op, 12b imm
@@ -131,6 +126,8 @@ void CPU::decodeInstr(){
 	uint16_t imm6 = instr & 0x003F;
 	uint16_t imm12 = instr & 0x0FFF;
 
+	fetchdec_buf[1] = instr; //Update IF/ID_old
+
 
 	decexe_buf[0][0] = registers[sreg];
 	decexe_buf[0][1] = registers[treg];
@@ -138,41 +135,48 @@ void CPU::decodeInstr(){
 	decexe_buf[0][3] = shfunc;
 	decexe_buf[0][4] = imm6;
 	decexe_buf[0][5] = imm12;
-
-	/*Control Unit*/
-	switch (opcode){
-		case 0x0: //ALU Func
-			ALU::runWithFunc();
-			break;
-		case 0x1: //ADDI
-			break;
-		case 0x2: //SLT
-			break;
-		case 0x3: //SLL
-		case 0x4: //SLA
-		case 0x5: //SRL
-			break;
-		case 0x6: //SW
-		case 0x7: //LW
-			break;
-		case 0x8: //BLEZ
-		case 0x9: //BEQ
-			break;
-		case 0xA: //J
-			break;
-		case 0xF: //NOP or our pseudo-end instruction
-			if (instr == 0xFFFF){
-				state = EXIT;
-			}
-			return;
-		default:
-			//Throw some kind of Invalid Instruction error, print the PC & instruction
-			break;
-	}
-	
-	fetchdec_buf[1] = instr; //Update IF/ID_old
+	decexe_buf[0][6] = opcode;
 }
 
+/*Control Unit*/
+void CPU::control(){
+	switch (decexe_buf[0][6]){ //Index 6 = Opcode
+	case 0x0: //ALU Func
+		ALU::runWithFunc();
+		break;
+	case 0x1: //ADDI
+		ALU::addi();
+		break;
+	case 0x2: //SLT
+		break;
+	case 0x3: //SLL
+		break;
+	case 0x4: //SLA
+		break;
+	case 0x5: //SRL
+		break;
+	case 0x6: //SW
+		break;
+	case 0x7: //LW
+		break;
+	case 0x8: //BLEZ
+		break;
+	case 0x9: //BEQ
+		break;
+	case 0xA: //J
+		break;
+	case 0xF: //NOP or our pseudo-end instruction
+		if (decexe_buf[0][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
+			state = EXIT;
+		}
+		return;
+	default:
+		//Throw some kind of Invalid Instruction error, print the PC & instruction
+		break;
+	}
+}
+
+/*Writeback Stage*/
 void CPU::writeback(){
 
 }
