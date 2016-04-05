@@ -1,9 +1,7 @@
 #include "Cpu.h"
 
-const std::array<uint16_t, 45> program = {
+const std::array<uint16_t, 48> program = {
 	0x149F, // addi $v0, $v0, 31
-	0xF000, // nop - Inserted based on requirement to use the instruction
-	0xF000, // nop ^
 	0x149F, // addi $v0, $v0, 31
 	0x1482, // addi $v0, $v0, 2
 	0x1D90, // addi $a0, $a0, 16
@@ -16,6 +14,8 @@ const std::array<uint16_t, 45> program = {
 	0x1FC5, // addi $a1, $a1, 5
 	//WHILE:
 	0x8E00, // blez $a1, EXIT (PC + 2 + Offset() << 2) = PC relative location
+	0xF000, // nop
+	0xF000, // nop
 	0x024C, // xor $t1, $t1, $t1
 	0x1241, // addi $t1, $t1, 1
 	0x0E79, // sub $a1, $a1, $t1
@@ -25,7 +25,9 @@ const std::array<uint16_t, 45> program = {
 	0x304C, // sll $t1, $t1, 4
 	0x9000, // beq $t0, $t1, ELSE
 	0x2208, // slt $t1, $t1, $t0
-	0x8202, // blez $t1, CONT (PC + 2 + Offset() << 2) = PC relative location
+	0x8204, // blez $t1, CONT (PC + 2 + Offset() << 2) = PC relative location
+	0xF000, // nop
+	0xF000, // nop
 	0xA000, // j ELSE
 	//CONT:
 	0x5093, // srl $v0, $v0, 3

@@ -81,6 +81,7 @@
     <ClCompile Include="Alu.cpp" />
     <ClCompile Include="Boot.cpp" />
     <ClCompile Include="Cpu.cpp" />
+    <ClCompile Include="Memory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Alu.h" />
