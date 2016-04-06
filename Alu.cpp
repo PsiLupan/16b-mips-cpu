@@ -15,23 +15,23 @@
 void ALU::runWithFunc(){
 	switch (CPU::decexe_buf[1][SHFUNC]){
 		case 0: //ADD
-			CPU::exewb_buf[0][RESULT] = CPU::decexe_buf[1][SREG] + CPU::decexe_buf[1][TREG];
+			CPU::exemem_buf[0][RESULT] = CPU::decexe_buf[1][SREG] + CPU::decexe_buf[1][TREG];
 			break;
 		case 1: //SUB
-			CPU::exewb_buf[0][RESULT] = CPU::decexe_buf[1][SREG] - CPU::decexe_buf[1][TREG];
+			CPU::exemem_buf[0][RESULT] = CPU::decexe_buf[1][SREG] - CPU::decexe_buf[1][TREG];
 			break;
 		case 2: //AND
-			CPU::exewb_buf[0][RESULT] = CPU::decexe_buf[1][SREG] & CPU::decexe_buf[1][TREG];
+			CPU::exemem_buf[0][RESULT] = CPU::decexe_buf[1][SREG] & CPU::decexe_buf[1][TREG];
 			break;
 		case 3: //OR
-			CPU::exewb_buf[0][RESULT] = CPU::decexe_buf[1][SREG] | CPU::decexe_buf[1][TREG];
+			CPU::exemem_buf[0][RESULT] = CPU::decexe_buf[1][SREG] | CPU::decexe_buf[1][TREG];
 			break;
 		case 4: //XOR
-			CPU::exewb_buf[0][RESULT] = CPU::decexe_buf[1][SREG] ^ CPU::decexe_buf[1][TREG];
+			CPU::exemem_buf[0][RESULT] = CPU::decexe_buf[1][SREG] ^ CPU::decexe_buf[1][TREG];
 			break;
 	}
 }
 
 void ALU::addi(){
-	CPU::exewb_buf[0][RESULT] = CPU::decexe_buf[1][TREG] + CPU::decexe_buf[1][IMM6];
+	CPU::exemem_buf[0][RESULT] = CPU::decexe_buf[1][TREG] + CPU::decexe_buf[1][IMM6];
 }

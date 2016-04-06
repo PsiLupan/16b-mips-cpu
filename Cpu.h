@@ -25,7 +25,8 @@ public:
 	static std::array<uint16_t, 8> registers;
 	static uint16_t fetchdec_buf[2];
 	static uint16_t decexe_buf[2][7];
-	static uint16_t exewb_buf[2][3];
+	static uint16_t exemem_buf[2][3];
+	static uint16_t memwb_buf[2];
 
 	static uint16_t pc;
 	static bool g_step;
