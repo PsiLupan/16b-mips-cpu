@@ -55,7 +55,19 @@ const std::array<uint16_t, 48> program = {
 	0xFFFF // This is a psuedo-instruction that will signal the end of the code for our processor
 };
 
+uint16_t CPU::fetchdec_buf[2];
+uint16_t CPU::decexe_buf[2][7];
+uint16_t CPU::exemem_buf[2][3];
+uint16_t CPU::memwb_buf[2];
+
+std::array<uint16_t, 8> CPU::registers;
+uint16_t CPU::pc;
+bool CPU::g_step;
+
+CPU::CPU_STATE CPU::state;
+
 void CPU::Init(){
+
 	//Set our process counter to 0
 	pc = 0;
 
