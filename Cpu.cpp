@@ -89,6 +89,7 @@ void CPU::Run(){
 	while (true){
 		switch (state){
 			case RUN:
+				/*TODO: Swap the old buffers with the new*/
 				fetchdec_buf[0] = fetchInstr(); // IF/ID_new
 				decodeInstr();
 				control();
@@ -118,7 +119,7 @@ I-type: 4b op, 3b rs, 3b rt, 6b imm
 J-type: 4b op, 12b imm
 */
 void CPU::decodeInstr(){
-	uint16_t instr = fetchdec_buf[0];
+	uint16_t instr = fetchdec_buf[1];
 	uint16_t opcode = (instr & 0xFF00) >> 12;
 	
 	uint16_t sreg = (instr & 0x0E00) >> 9;
@@ -127,8 +128,6 @@ void CPU::decodeInstr(){
 	uint16_t shfunc = instr & 0x0007;
 	uint16_t imm6 = instr & 0x003F;
 	uint16_t imm12 = instr & 0x0FFF;
-
-	fetchdec_buf[1] = instr; //Update IF/ID_old
 
 
 	decexe_buf[0][0] = registers[sreg];
@@ -142,7 +141,7 @@ void CPU::decodeInstr(){
 
 /*Control Unit*/
 void CPU::control(){
-	switch (decexe_buf[0][6]){ //Index 6 = Opcode
+	switch (decexe_buf[1][6]){ //Index 6 = Opcode
 	case 0x0: //ALU Func
 		ALU::runWithFunc();
 		break;
@@ -168,7 +167,7 @@ void CPU::control(){
 	case 0xA: //J
 		break;
 	case 0xF: //NOP or our pseudo-end instruction
-		if (decexe_buf[0][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
+		if (decexe_buf[1][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
 			state = EXIT;
 		}
 		return;
