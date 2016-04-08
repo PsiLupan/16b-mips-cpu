@@ -41,7 +41,7 @@ const std::array<uint16_t, 48> program = {
 	0x6A40, // sw $t1, 0($a0)
 	0xA05C, // j PELSE (PC + 2)|Upper 4b + Offset(92) = Address
 	//ELSE:
-	0x4122, // sla $v2, $v2, 2
+	0x3122, // sll $v2, $v2, 2
 	0x0B2C, // xor $v3, $v3, $v2
 	0x024C, // xor $t1, $t1, $t1
 	0x125E, // addi $t1, $t1, 30
@@ -163,10 +163,13 @@ void CPU::control(){
 	case 0x2: //SLT
 		break;
 	case 0x3: //SLL
+		ALU::sll();
 		break;
-	case 0x4: //SLA
+	case 0x4: //SRA
+		/*Our instructions currently do not use this, so it will not fire.*/
 		break;
 	case 0x5: //SRL
+		ALU::srl();
 		break;
 	case 0x6: //SW
 		break;

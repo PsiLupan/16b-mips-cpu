@@ -35,3 +35,21 @@ void ALU::runWithFunc(){
 void ALU::addi(){
 	CPU::exemem_buf[0][RESULT] = CPU::decexe_buf[1][TREG] + CPU::decexe_buf[1][IMM6];
 }
+
+/*
+*/
+void ALU::sll() {
+	CPU::exemem_buf[0][RESULT] = CPU::decexe_buf[1][TREG] << CPU::decexe_buf[1][SHFUNC];
+}
+
+/* This relies on the fact that Visual Studio compiles a right-shift as a an arithmatic shift, if it's a signed value.
+Therefore, this may not work if you compile with another compiler.
+*/
+void ALU::sra() {
+	CPU::exemem_buf[0][RESULT] = (int16_t)CPU::decexe_buf[1][TREG] >> CPU::decexe_buf[1][SHFUNC];
+}
+
+/*See above comment regarding SRA*/
+void ALU::srl() {
+	CPU::exemem_buf[0][RESULT] = CPU::decexe_buf[1][TREG] >> CPU::decexe_buf[1][SHFUNC];
+}
