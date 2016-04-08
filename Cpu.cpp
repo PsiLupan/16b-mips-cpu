@@ -2,16 +2,16 @@
 
 const std::array<uint16_t, 48> program = {
 	0x149F, // addi $v0, $v0, 31
-	0x149F, // addi $v0, $v0, 31
-	0x1482, // addi $v0, $v0, 2
+	0x1FC5, // addi $a1, $a1, 5
 	0x1D90, // addi $a0, $a0, 16
-	0x0798, // add $v1, $v1, $a1
+	0x0798, // add $v1, $v1, $a1 //TODO: FIX ME
+	0x1482, // addi $v0, $v0, 2
 	0x30DF, // sll $v1, $v1, 7
+	0x149F, // addi $v0, $v0, 31
 	0x30D9, // sll $v1, $v1, 1
-	0x16D0, // addi $v1, $v1, 16
 	0x190F, // addi $v2, $v2, 15
 	0x316C, // sll $v3, $v2, 4
-	0x1FC5, // addi $a1, $a1, 5
+	0x16D0, // addi $v1, $v1, 16
 	//WHILE:
 	0x8E00, // blez $a1, EXIT (PC + 2 + Offset() << 2) = PC relative location
 	0xF000, // nop
