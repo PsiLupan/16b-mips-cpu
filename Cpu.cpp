@@ -55,14 +55,9 @@ const std::array<uint16_t, 48> program = {
 	0xFFFF // This is a psuedo-instruction that will signal the end of the code for our processor
 };
 
-uint16_t CPU::fetchdec_buf[2];
-uint16_t CPU::decexe_buf[2][7];
-uint16_t CPU::exemem_buf[2][3];
-uint16_t CPU::memwb_buf[2];
-
 std::array<uint16_t, 8> CPU::registers;
 uint16_t CPU::pc;
-bool CPU::g_step;
+bool CPU::g_step = false;
 
 CPU::CPU_STATE CPU::state;
 
@@ -102,7 +97,7 @@ void CPU::Run(){
 		switch (state){
 			case RUN:
 				/*TODO: Swap the old buffers with the new*/
-				fetchdec_buf[0] = fetchInstr(); // IF/ID_new
+				fetchInstr();
 				decodeInstr();
 				control();
 				writeback();
@@ -119,10 +114,9 @@ void CPU::Run(){
 }
 
 /*Instruction Fetch*/
-uint16_t CPU::fetchInstr(){
-	uint16_t instr = Memory::instr[pc];
+void CPU::fetchInstr(){
+	Buffer::fetchdec = Memory::instr[pc];
 	pc += 1; // We're incrementing by 1 here, because we work with 2 bytes instead of 1 at a time
-	return instr;
 }
 
 /* Instruction Decode
@@ -131,7 +125,7 @@ I-type: 4b op, 3b rs, 3b rt, 6b imm
 J-type: 4b op, 12b imm
 */
 void CPU::decodeInstr(){
-	uint16_t instr = fetchdec_buf[1];
+	uint16_t instr = Buffer::fetchdec;
 	uint16_t opcode = (instr & 0xFF00) >> 12;
 	
 	uint16_t sreg = (instr & 0x0E00) >> 9;
@@ -142,18 +136,18 @@ void CPU::decodeInstr(){
 	uint16_t imm12 = instr & 0x0FFF;
 
 
-	decexe_buf[0][0] = registers[sreg];
-	decexe_buf[0][1] = registers[treg];
-	decexe_buf[0][2] = registers[dreg];
-	decexe_buf[0][3] = shfunc;
-	decexe_buf[0][4] = imm6;
-	decexe_buf[0][5] = imm12;
-	decexe_buf[0][6] = opcode;
+	Buffer::decexe[0][0] = registers[sreg];
+	Buffer::decexe[0][1] = registers[treg];
+	Buffer::decexe[0][2] = registers[dreg];
+	Buffer::decexe[0][3] = shfunc;
+	Buffer::decexe[0][4] = imm6;
+	Buffer::decexe[0][5] = imm12;
+	Buffer::decexe[0][6] = opcode;
 }
 
 /*Control Unit*/
 void CPU::control(){
-	switch (decexe_buf[1][6]){ //Index 6 = Opcode
+	switch (Buffer::decexe[1][6]){ //Index 6 = Opcode
 	case 0x0: //ALU Func
 		ALU::runWithFunc();
 		break;
@@ -182,7 +176,7 @@ void CPU::control(){
 	case 0xA: //J
 		break;
 	case 0xF: //NOP or our pseudo-end instruction
-		if (decexe_buf[1][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
+		if (Buffer::decexe[1][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
 			state = EXIT;
 		}
 		return;
