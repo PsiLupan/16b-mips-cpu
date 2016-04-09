@@ -81,7 +81,7 @@ void CPU::Init(){
 	Memory::data[9] = 0x00FF;
 
 	//Set step based on user input
-	g_step = false;
+	g_step = true;
 
 	state = RUN;
 
@@ -126,6 +126,7 @@ void CPU::Run(){
 				swapBuffers();
 				break;
 			case EXIT:
+				Shutdown();
 				return; //Exit our loop
 		}
 	}
