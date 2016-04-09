@@ -181,6 +181,7 @@ void CPU::control(){
 		break;
 	case 0x4: //SRA
 		/*Our instructions currently do not use this, so it will not fire.*/
+		ALU::sra();
 		break;
 	case 0x5: //SRL
 		ALU::srl();
