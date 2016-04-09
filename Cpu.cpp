@@ -92,19 +92,38 @@ void CPU::Shutdown(){
 	//Print our final registers, memory, etc. here
 }
 
+void CPU::swapBuffers() {
+	/*Move Fetch results to Buffer new*/
+	for (int i = 0; i < 7; i++) {
+		Buffer::decode[0][i] = Buffer::fetch[i];
+	}
+	Buffer::decode[0][8] = 0;
+	Buffer::decode[0][9] = 0;
+
+	for (int i = 0; i < 9; i++) {
+		Buffer::exec[0][i] = Buffer::decode[1][i];
+		Buffer::memory[0][i] = Buffer::exec[1][i];
+		Buffer::write[0][i] = Buffer::memory[1][i];
+	}
+}
+
 void CPU::Run(){
 	while (true){
 		switch (state){
 			case RUN:
-				/*TODO: Swap the old buffers with the new*/
+				memory();
+				writeback();
 				fetchInstr();
 				decodeInstr();
 				control();
-				writeback();
+
+				/*TODO: Hazard Detection*/
 				
 				if (g_step){
 					getchar(); //Wait for the user to input something before we step again
 				}
+
+				swapBuffers();
 				break;
 			case EXIT:
 				return; //Exit our loop
@@ -113,41 +132,42 @@ void CPU::Run(){
 	Shutdown();
 }
 
-/*Instruction Fetch*/
-void CPU::fetchInstr(){
-	Buffer::fetchdec = Memory::instr[pc];
-	pc += 1; // We're incrementing by 1 here, because we work with 2 bytes instead of 1 at a time
-}
-
-/* Instruction Decode
+/*Instruction Fetch
 R-type: 4b op, 3b rs, 3b rt, 3b rt, 3b func
 I-type: 4b op, 3b rs, 3b rt, 6b imm
 J-type: 4b op, 12b imm
 */
+void CPU::fetchInstr(){
+	uint16_t instr = Memory::instr[pc];
+
+	Buffer::fetch[0] = (instr & 0x0E00) >> 9; //SREG
+	Buffer::fetch[1] = (instr & 0x01C0) >> 6; //TREG
+	Buffer::fetch[2] = (instr & 0x0038) >> 3; //DREG
+	Buffer::fetch[3] = instr & 0x0007; //SHFUNC
+	Buffer::fetch[4] = instr & 0x003F; //IMM6
+	Buffer::fetch[5] = instr & 0x0FFF; //IMM12
+	Buffer::fetch[6] = (instr & 0xFF00) >> 12; //OPCODE
+	pc += 1; // We're incrementing by 1 here, because we work with 2 bytes instead of 1 at a time
+}
+
+/* Instruction Decode
+*/
 void CPU::decodeInstr(){
-	uint16_t instr = Buffer::fetchdec;
-	uint16_t opcode = (instr & 0xFF00) >> 12;
-	
-	uint16_t sreg = (instr & 0x0E00) >> 9;
-	uint16_t treg = (instr & 0x01C0) >> 6;
-	uint16_t dreg = (instr & 0x0038) >> 3;
-	uint16_t shfunc = instr & 0x0007;
-	uint16_t imm6 = instr & 0x003F;
-	uint16_t imm12 = instr & 0x0FFF;
 
-
-	Buffer::decexe[0][0] = registers[sreg];
-	Buffer::decexe[0][1] = registers[treg];
-	Buffer::decexe[0][2] = registers[dreg];
-	Buffer::decexe[0][3] = shfunc;
-	Buffer::decexe[0][4] = imm6;
-	Buffer::decexe[0][5] = imm12;
-	Buffer::decexe[0][6] = opcode;
+	Buffer::decode[1][0] = registers[Buffer::decode[0][0]]; // SREG Val
+	Buffer::decode[1][1] = registers[Buffer::decode[0][1]]; // TREG Val
+	Buffer::decode[1][2] = Buffer::decode[0][2]; // DREG
+	Buffer::decode[1][3] = Buffer::decode[0][3];
+	Buffer::decode[1][4] = Buffer::decode[0][4];
+	Buffer::decode[1][5] = Buffer::decode[0][5];
+	Buffer::decode[1][6] = Buffer::decode[0][6];
+	Buffer::decode[1][7] = Buffer::decode[0][0]; //SREG
+	Buffer::decode[1][8] = Buffer::decode[0][1]; //TREG
 }
 
 /*Control Unit*/
 void CPU::control(){
-	switch (Buffer::decexe[1][6]){ //Index 6 = Opcode
+	switch (Buffer::decode[1][6]){ //Index 6 = Opcode
 	case 0x0: //ALU Func
 		ALU::runWithFunc();
 		break;
@@ -176,7 +196,7 @@ void CPU::control(){
 	case 0xA: //J
 		break;
 	case 0xF: //NOP or our pseudo-end instruction
-		if (Buffer::decexe[1][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
+		if (Buffer::decode[1][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
 			state = EXIT;
 		}
 		return;
@@ -184,6 +204,11 @@ void CPU::control(){
 		//Throw some kind of Invalid Instruction error, print the PC & instruction
 		break;
 	}
+}
+
+/*Memory Stage*/
+void CPU::memory() {
+
 }
 
 /*Writeback Stage*/

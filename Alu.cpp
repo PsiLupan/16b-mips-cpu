@@ -1,55 +1,56 @@
 #include "Alu.h"
 #include "Cpu.h"
 
-//exewb Buffer Indices
-#define RESULT 0
-
-//decexe Buffer Indices
-#define SREG 0
-#define TREG 1
+//EXEC 0 Buffer Indices
+#define SREGVAL 0
+#define TREGVAL 1
 #define DREG 2
 #define SHFUNC 3
 #define IMM6 4
 #define IMM12 5
+#define OPCODE 6
+#define SREG 7
+#define TREG 8
+
+//EXEC 1 Buffer Indices
+#define RESULT 0
 
 void ALU::runWithFunc(){
-	switch (Buffer::decexe[1][SHFUNC]){
+	switch (Buffer::exec[0][SHFUNC]){
 		case 0: //ADD
-			Buffer::exemem[0][RESULT] = Buffer::decexe[1][SREG] + Buffer::decexe[1][TREG];
+			Buffer::exec[1][RESULT] = Buffer::exec[0][SREGVAL] + Buffer::exec[0][TREGVAL];
 			break;
 		case 1: //SUB
-			Buffer::exemem[0][RESULT] = Buffer::decexe[1][SREG] - Buffer::decexe[1][TREG];
+			Buffer::exec[1][RESULT] = Buffer::exec[0][SREGVAL] - Buffer::exec[0][TREGVAL];
 			break;
 		case 2: //AND
-			Buffer::exemem[0][RESULT] = Buffer::decexe[1][SREG] & Buffer::decexe[1][TREG];
+			Buffer::exec[1][RESULT] = Buffer::exec[0][SREGVAL] & Buffer::exec[0][TREGVAL];
 			break;
 		case 3: //OR
-			Buffer::exemem[0][RESULT] = Buffer::decexe[1][SREG] | Buffer::decexe[1][TREG];
+			Buffer::exec[1][RESULT] = Buffer::exec[0][SREGVAL] | Buffer::exec[0][TREGVAL];
 			break;
 		case 4: //XOR
-			Buffer::exemem[0][RESULT] = Buffer::decexe[1][SREG] ^ Buffer::decexe[1][TREG];
+			Buffer::exec[1][RESULT] = Buffer::exec[0][SREGVAL] ^ Buffer::exec[0][TREGVAL];
 			break;
 	}
 }
 
 void ALU::addi(){
-	Buffer::exemem[0][RESULT] = Buffer::decexe[1][TREG] + Buffer::decexe[1][IMM6];
+	Buffer::exec[1][RESULT] = Buffer::exec[0][TREGVAL] + Buffer::exec[0][IMM6];
 }
 
-/*
-*/
 void ALU::sll() {
-	Buffer::exemem[0][RESULT] = Buffer::decexe[1][TREG] << Buffer::decexe[1][SHFUNC];
+	Buffer::exec[1][RESULT] = Buffer::exec[0][TREGVAL] << Buffer::exec[0][SHFUNC];
 }
 
 /* This relies on the fact that Visual Studio compiles a right-shift as a an arithmatic shift, if it's a signed value.
 Therefore, this may not work if you compile with another compiler.
 */
 void ALU::sra() {
-	Buffer::exemem[0][RESULT] = (int16_t)Buffer::decexe[1][TREG] >> Buffer::decexe[1][SHFUNC];
+	Buffer::exec[1][RESULT] = (int16_t)Buffer::exec[0][TREGVAL] >> Buffer::exec[0][SHFUNC];
 }
 
 /*See above comment regarding SRA*/
 void ALU::srl() {
-	Buffer::exemem[0][RESULT] = Buffer::decexe[1][TREG] >> Buffer::decexe[1][SHFUNC];
+	Buffer::exec[1][RESULT] = Buffer::exec[0][TREGVAL] >> Buffer::exec[0][SHFUNC];
 }

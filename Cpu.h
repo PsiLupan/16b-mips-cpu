@@ -6,9 +6,12 @@
 
 class CPU {
 private:
+	static void swapBuffers();
+
 	static void fetchInstr();
 	static void decodeInstr();
 	static void control();
+	static void memory();
 	static void writeback();
 
 	enum CPU_STATE {
@@ -30,8 +33,9 @@ public:
 };
 
 namespace Buffer {
-	static uint16_t fetchdec; //Instruction
-	static uint16_t decexe[2][7]; //SREG 0, TREG 1, DREG 2, SHFUNC 3, IMM6 4, IMM12 5, OPCODE 6
-	static uint16_t exemem[2][3]; //RESULT 0, Unk 1, Unk 2 TODO: Figure out what we may need here
-	static uint16_t memwb[2];
+	static uint16_t fetch[7]; //SREG 0, TREG 1, DREG 2, SHFUNC 3, IMM6 4, IMM12 5, OPCODE 6
+	static uint16_t decode[2][9]; //For decode[1]: SREG VAL 0, TREG VAL 1, DREG 2, SHFUNC 3, IMM6 4, IMM12 5, OPCODE 6, SREG 7, TREG 8
+	static uint16_t exec[2][9];
+	static uint16_t memory[2][9];
+	static uint16_t write[2][9];
 }
