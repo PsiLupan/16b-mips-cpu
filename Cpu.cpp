@@ -81,7 +81,7 @@ void CPU::Init(){
 	Memory::data[9] = 0x00FF;
 
 	//Set step based on user input
-	g_step = true;
+	g_step = false;
 
 	state = RUN;
 
@@ -176,6 +176,7 @@ void CPU::control(){
 		ALU::addi();
 		break;
 	case 0x2: //SLT
+		ALU::slt();
 		break;
 	case 0x3: //SLL
 		ALU::sll();
