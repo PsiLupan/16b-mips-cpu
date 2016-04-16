@@ -154,7 +154,6 @@ void CPU::Run(){
 				return; //Exit our loop
 		}
 	}
-	Shutdown();
 }
 
 /*Instruction Fetch
