@@ -10,7 +10,7 @@ private:
 
 	static void fetchInstr();
 	static void decodeInstr();
-	static void control();
+	static void execute();
 	static void memory();
 	static void writeback();
 

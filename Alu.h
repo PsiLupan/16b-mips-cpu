@@ -21,4 +21,5 @@ namespace ALU {
 	void sll();
 	void sra();
 	void srl();
+	void mem();
 }

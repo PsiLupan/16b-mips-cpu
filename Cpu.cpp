@@ -115,7 +115,7 @@ void CPU::Run(){
 				writeback();
 				fetchInstr();
 				decodeInstr();
-				control();
+				execute();
 
 				/*TODO: Hazard Detection*/
 				
@@ -166,9 +166,9 @@ void CPU::decodeInstr(){
 	Buffer::decode[1][8] = Buffer::decode[0][1]; //TREG
 }
 
-/*Control Unit*/
-void CPU::control(){
-	switch (Buffer::decode[1][6]){ //Index 6 = Opcode
+/*Execution*/
+void CPU::execute(){
+	switch (Buffer::exec[0][6]){ //Index 6 = Opcode
 	case 0x0: //ALU Func
 		ALU::runWithFunc();
 		break;
@@ -189,14 +189,27 @@ void CPU::control(){
 		ALU::srl();
 		break;
 	case 0x6: //SW
-		break;
 	case 0x7: //LW
+		ALU::mem();
 		break;
 	case 0x8: //BLEZ
+		if ((int16_t)Buffer::exec[0][0] <= 0) { //SREGV <= 0
+			pc = Buffer::exec[0][4] << 2; //pc = imm6 << 2
+		}
+		else {
+			pc += 1;
+		}
 		break;
 	case 0x9: //BEQ
+		if (Buffer::exec[0][0] == Buffer::exec[0][1]) { //SREGV == TREGV
+			pc = Buffer::exec[0][4] << 2; //pc = imm6 << 2
+		}
+		else {
+			pc += 1;
+		}
 		break;
 	case 0xA: //J
+		pc = (pc & 0xf000) | ((int16_t)Buffer::exec[0][5] << 2); //nPC = (PC & 0xf000) | (target << 2);
 		break;
 	case 0xF: //NOP or our pseudo-end instruction
 		if (Buffer::decode[1][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction

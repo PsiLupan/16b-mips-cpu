@@ -4,10 +4,10 @@
 void ALU::runWithFunc(){
 	switch (Buffer::exec[0][SHFUNC]){
 		case 0: //ADD
-			Buffer::exec[1][RESULT] = Buffer::exec[0][SREGVAL] + Buffer::exec[0][TREGVAL];
+			Buffer::exec[1][RESULT] = (int16_t)Buffer::exec[0][SREGVAL] + (int16_t)Buffer::exec[0][TREGVAL];
 			break;
 		case 1: //SUB
-			Buffer::exec[1][RESULT] = Buffer::exec[0][SREGVAL] - Buffer::exec[0][TREGVAL];
+			Buffer::exec[1][RESULT] = (int16_t)Buffer::exec[0][SREGVAL] - (int16_t)Buffer::exec[0][TREGVAL];
 			break;
 		case 2: //AND
 			Buffer::exec[1][RESULT] = Buffer::exec[0][SREGVAL] & Buffer::exec[0][TREGVAL];
@@ -22,11 +22,11 @@ void ALU::runWithFunc(){
 }
 
 void ALU::addi(){
-	Buffer::exec[1][RESULT] = Buffer::exec[0][TREGVAL] + Buffer::exec[0][IMM6];
+	Buffer::exec[1][RESULT] = (int16_t)Buffer::exec[0][TREGVAL] + (int16_t)Buffer::exec[0][IMM6];
 }
 
 void ALU::slt() {
-	Buffer::exec[1][RESULT] = Buffer::exec[0][TREGVAL] < Buffer::exec[0][SREGVAL];
+	Buffer::exec[1][RESULT] = (int16_t)Buffer::exec[0][TREGVAL] < (int16_t)Buffer::exec[0][SREGVAL];
 }
 
 void ALU::sll() {
@@ -43,4 +43,8 @@ void ALU::sra() {
 /*See above comment regarding SRA*/
 void ALU::srl() {
 	Buffer::exec[1][RESULT] = Buffer::exec[0][TREGVAL] >> Buffer::exec[0][SHFUNC];
+}
+
+void ALU::mem() {
+	Buffer::exec[1][RESULT] = (int16_t)Buffer::exec[0][SREGVAL] + (int16_t)Buffer::exec[0][IMM6];
 }
