@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <math.h>
 
 //EXEC 0 Buffer Indices
 #define SREGVAL 0
