@@ -90,7 +90,9 @@ void CPU::Init(){
 
 void CPU::PrintState() {
 
-	printf("| PC: %d \t|\n\n", pc);
+	printf("-----------------\n");
+	printf("|     PC: %d \t|\n", pc);
+	printf("-----------------\n");
 
 	printf("-----------------\t----------------\n");
 	printf("|     MEMORY    |\t| REGISTER FILE |\n");
