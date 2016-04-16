@@ -88,8 +88,30 @@ void CPU::Init(){
 	Run();
 }
 
+void CPU::PrintState() {
+
+	printf("| PC: %d \t|\n\n", pc);
+
+	printf("-----------------\t----------------\n");
+	printf("|     MEMORY    |\t| REGISTER FILE |\n");
+	printf("-----------------\t----------------\n");
+	for (int i = 0; i < 64; i++) {
+		if (i < 8) {
+			printf("| [%X] %X \t|\t| $R%d: %d \t|\n", i, Memory::data[i], i, registers[i]);
+		}
+		else if (i == 8) {
+			printf("| [%X] %X \t|\t----------------\n", i, Memory::data[i]);
+		}
+		else {
+			printf("| [%X] %X \t|\n", i, Memory::data[i]);
+		}
+	}
+
+	getchar(); //Wait for the user to input something before we cont
+}
+
 void CPU::Shutdown(){
-	//Print our final registers, memory, etc. here
+	PrintState();
 }
 
 void CPU::swapBuffers() {
@@ -120,7 +142,7 @@ void CPU::Run(){
 				/*TODO: Hazard Detection*/
 				
 				if (g_step){
-					getchar(); //Wait for the user to input something before we step again
+					PrintState();
 				}
 
 				swapBuffers();

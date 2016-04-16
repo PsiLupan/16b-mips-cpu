@@ -21,6 +21,7 @@ private:
 
 public:
 	void Init();
+	void PrintState();
 	void Shutdown();
 	void Run();
 	static CPU* getInstance();
