@@ -1,6 +1,6 @@
 #include "Cpu.h"
 
-const std::array<uint16_t, 55> program = {
+const std::array<uint16_t, 53> program = {
 	0x149F, // addi $v0, $v0, 31
 	0x1FC5, // addi $a1, $a1, 5
 	0x1D90, // addi $a0, $a0, 16
@@ -12,8 +12,6 @@ const std::array<uint16_t, 55> program = {
 	0x190F, // addi $v2, $v2, 15
 	0x316C, // sll $v3, $v2, 4
 	0x16D0, // addi $v1, $v1, 16
-	0xF000, // nop
-	0xF000, // nop
 	0x8E09, // //WHILE: blez $a1, EXIT (PC + 2 + Offset() << 2) = PC relative location
 	0xF000, // nop
 	0xF000, // nop
@@ -194,6 +192,9 @@ void CPU::decodeInstr(){
 
 /*Execution*/
 void CPU::execute(){
+
+	Memory::exec[0][0] = Memory::registers[Memory::exec[0][7]]; //For some reason, this wasn't working in decode stage, so we do it again in exec
+	Memory::exec[0][1] = Memory::registers[Memory::exec[0][8]];
 	for (int i = 0; i < 9; i++){
 		Memory::exec[1][i] = Memory::exec[0][i];
 	}
@@ -224,12 +225,12 @@ void CPU::execute(){
 		break;
 	case 0x8: //BLEZ
 		if ((int16_t)Memory::exec[0][0] <= 0) { //SREGV <= 0
-			pc = pc + (Memory::exec[0][4] << 2); //pc = imm6 << 2
+			pc = pc + (Memory::exec[0][4] << 2); //pc = pc + imm6 << 2
 		}
 		break;
 	case 0x9: //BEQ
 		if (Memory::exec[0][0] == Memory::exec[0][1]) { //SREGV == TREGV
-			pc = pc + (Memory::exec[0][4] << 2); //pc = imm6 << 2
+			pc = pc + (Memory::exec[0][4] << 2); //pc = pc + imm6 << 2
 		}
 		break;
 	case 0xA: //J
