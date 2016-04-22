@@ -16,11 +16,11 @@
 #define RESULT 0
 
 namespace ALU {
-	void runWithFunc();
-	void addi();
-	void slt();
-	void sll();
-	void sra();
-	void srl();
-	void mem();
+	void runWithFunc(uint16_t exec[2][9]);
+	void addi(uint16_t exec[2][9]);
+	void slt(uint16_t exec[2][9]);
+	void sll(uint16_t exec[2][9]);
+	void sra(uint16_t exec[2][9]);
+	void srl(uint16_t exec[2][9]);
+	void mem(uint16_t exec[2][9]);
 }
