@@ -4,10 +4,10 @@ const std::array<uint8_t, 112> program = {
 	0x14, 0x9F, // addi $v0, $v0, 31
 	0x1F, 0xC5, // addi $a1, $a1, 5
 	0x1D, 0x90, // addi $a0, $a0, 16
-	0x07, 0x98, // add $v1, $v1, $a1 //TODO: FIX ME
-	0x14, 0x82, // addi $v0, $v0, 2
-	0x30, 0xDF, // sll $v1, $v1, 7
+	0x07, 0x58, // add $v1, $v1, $a0
 	0x14, 0x9F, // addi $v0, $v0, 31
+	0x30, 0xDF, // sll $v1, $v1, 7
+	0x14, 0x82, // addi $v0, $v0, 2
 	0x30, 0xD9, // sll $v1, $v1, 1
 	0x19, 0x0F, // addi $v2, $v2, 15
 	0x31, 0x6C, // sll $v3, $v2, 4
@@ -161,7 +161,7 @@ void CPU::Run(){
 }
 
 /*Instruction Fetch
-R-type: 4b op, 3b rs, 3b rt, 3b rt, 3b func
+R-type: 4b op, 3b rs, 3b rt, 3b rd, 3b func
 I-type: 4b op, 3b rs, 3b rt, 6b imm
 J-type: 4b op, 12b imm
 */
