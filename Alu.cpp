@@ -30,19 +30,19 @@ void ALU::slt(uint16_t exec[2][9]) {
 }
 
 void ALU::sll(uint16_t exec[2][9]) {
-	exec[1][RESULT] = exec[0][TREGVAL] << (int16_t)(pow(2.0, (double)exec[0][SHFUNC]));
+	exec[1][RESULT] = exec[0][TREGVAL] << exec[0][SHFUNC];
 }
 
 /* This relies on the fact that Visual Studio compiles a right-shift as a an arithmatic shift, if it's a signed value.
 Therefore, this may not work if you compile with another compiler.
 */
 void ALU::sra(uint16_t exec[2][9]) {
-	exec[1][RESULT] = (int16_t)exec[0][TREGVAL] >> (int16_t)(pow(2.0, (double)exec[0][SHFUNC]));
+	exec[1][RESULT] = (int16_t)exec[0][TREGVAL] >> exec[0][SHFUNC];
 }
 
 /*See above comment regarding SRA*/
 void ALU::srl(uint16_t exec[2][9]) {
-	exec[1][RESULT] = exec[0][TREGVAL] >> (int16_t)(pow(2.0, (double)exec[0][SHFUNC]));
+	exec[1][RESULT] = exec[0][TREGVAL] >> exec[0][SHFUNC];
 }
 
 void ALU::mem(uint16_t exec[2][9]) {
