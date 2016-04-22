@@ -2,8 +2,8 @@
 #include <cstdint>
 
 namespace Memory {
-	static std::array<uint16_t, 64> instr; //256 bytes of instruction memory
-	static std::array<uint16_t, 64> data; //256 bytes of data memory
+	static std::array<uint8_t, 256> instr; //256 bytes of instruction memory
+	static std::array<uint16_t, 32> data; //64 bytes of data memory
 
 	static std::array<uint16_t, 8> registers;
 

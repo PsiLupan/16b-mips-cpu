@@ -1,60 +1,62 @@
 #include "Cpu.h"
 
-const std::array<uint16_t, 53> program = {
-	0x149F, // addi $v0, $v0, 31
-	0x1FC5, // addi $a1, $a1, 5
-	0x1D90, // addi $a0, $a0, 16
-	0x0798, // add $v1, $v1, $a1 //TODO: FIX ME
-	0x1482, // addi $v0, $v0, 2
-	0x30DF, // sll $v1, $v1, 7
-	0x149F, // addi $v0, $v0, 31
-	0x30D9, // sll $v1, $v1, 1
-	0x190F, // addi $v2, $v2, 15
-	0x316C, // sll $v3, $v2, 4
-	0x16D0, // addi $v1, $v1, 16
-	0x8E09, // //WHILE: blez $a1, EXIT (PC + 2 + Offset() << 2) = PC relative location
-	0xF000, // nop
-	0xF000, // nop
-	0x024C, // xor $t1, $t1, $t1
-	0x1241, // addi $t1, $t1, 1
-	0x0E79, // sub $a1, $a1, $t1
-	0x7180, // lw $t0, 0($a0)	
-	0x024C, // xor $t1, $t1, $t1
-	0x1250, // addi $t1, $t1, 16
-	0x304C, // sll $t1, $t1, 4
-	0x9000, // beq $t0, $t1, ELSE
-	0x2208, // slt $t1, $t1, $t0
-	0xF000, // nop
-	0xF000, // nop
-	0x8204, // blez $t1, CONT (PC + 2 + Offset() << 2) = PC relative location
-	0xF000, // nop
-	0xF000, // nop
-	0xA047, // j ELSE
-	0x5093, // CONT: srl $v0, $v0, 3
-	0x069B, // or $v1, $v1, $v0
-	0x024C, // xor $t1, $t1, $t1
-	0x125E, // addi $t1, $t1, 30
-	0x304B, // sll $t1, $t1, 3
-	0x124F, // addi $t1, $t1, 15
-	0x304F, // sll $t1, $t1, 7
-	0x3049, // sll $t1, $t1, 1
-	0x6A40, // sw $t1, 0($a0)
-	0xF000, // nop
-	0xF000, // nop
-	0xA05C, // j PELSE (PC + 2)|Upper 4b + Offset(92) = Address
-	0x3122, // ELSE: sll $v2, $v2, 2
-	0x0B2C, // xor $v3, $v3, $v2
-	0x024C, // xor $t1, $t1, $t1
-	0x125E, // addi $t1, $t1, 30
-	0x304B, // sll $t1, $t1, 3
-	0x124F, // addi $t1, $t1, 15
-	0x6A40, // sw $t1, 0($a0)
-	//PELSE:
-	0x1D82, // addi $a0, $a0, 2
-	0xF000, // nop
-	0xF000, // nop
-	0xA018, // j WHILE
-	0xFFFF //EXIT: This is a psuedo-instruction that will signal the end of the code for our processor
+const std::array<uint8_t, 112> program = {
+	0x14, 0x9F, // addi $v0, $v0, 31
+	0x1F, 0xC5, // addi $a1, $a1, 5
+	0x1D, 0x90, // addi $a0, $a0, 16
+	0x07, 0x98, // add $v1, $v1, $a1 //TODO: FIX ME
+	0x14, 0x82, // addi $v0, $v0, 2
+	0x30, 0xDF, // sll $v1, $v1, 7
+	0x14, 0x9F, // addi $v0, $v0, 31
+	0x30, 0xD9, // sll $v1, $v1, 1
+	0x19, 0x0F, // addi $v2, $v2, 15
+	0x31, 0x6C, // sll $v3, $v2, 4
+	0x16, 0xD0, // addi $v1, $v1, 16
+	0x8E, 0x0B, // //WHILE: blez $a1, EXIT (PC + Offset() << 2) = PC relative location
+	0xF0, 0x00, // nop
+	0xF0, 0x00, // nop
+	0x02, 0x4C, // xor $t1, $t1, $t1
+	0x12, 0x41, // addi $t1, $t1, 1
+	0x0E, 0x79, // sub $a1, $a1, $t1
+	0x71, 0x80, // lw $t0, 0($a0)	
+	0x02, 0x4C, // xor $t1, $t1, $t1
+	0x12, 0x50, // addi $t1, $t1, 16
+	0x30, 0x4C, // sll $t1, $t1, 4
+	0x90, 0x05, // beq $t0, $t1, ELSE
+	0xF0, 0x00, // nop
+	0xF0, 0x00, // nop
+	0x22, 0x08, // slt $t1, $t1, $t0
+	0xF0, 0x00, // nop
+	0xF0, 0x00, // nop
+	0x82, 0x01, // blez $t1, CONT (PC + Offset() << 2) = PC relative location
+	0xF0, 0x00, // nop
+	0xF0, 0x00, // nop
+	0xA0, 0x37, // j ELSE
+	0x50, 0x93, // CONT: srl $v0, $v0, 3
+	0x06, 0x9B, // or $v1, $v1, $v0
+	0x02, 0x4C, // xor $t1, $t1, $t1
+	0x12, 0x5E, // addi $t1, $t1, 30
+	0x30, 0x4B, // sll $t1, $t1, 3
+	0x12, 0x4F, // addi $t1, $t1, 15
+	0x30, 0x4F, // sll $t1, $t1, 7
+	0x30, 0x49, // sll $t1, $t1, 1
+	0x6A, 0x40, // sw $t1, 0($a0)
+	0xF0, 0x00, // nop
+	0xF0, 0x00, // nop
+	0xA0, 0x35, // j PELSE (PC + 2)|Upper 4b + Offset() = Address
+	0x31, 0x22, // ELSE: sll $v2, $v2, 2
+	0x0B, 0x2C, // xor $v3, $v3, $v2
+	0x02, 0x4C, // xor $t1, $t1, $t1
+	0x12, 0x5E, // addi $t1, $t1, 30
+	0x30, 0x4B, // sll $t1, $t1, 3
+	0x12, 0x4F, // addi $t1, $t1, 15
+	0x6A, 0x40, // sw $t1, 0($a0)
+	0x1D, 0x82, // PELSE: addi $a0, $a0, 2
+	0xF0, 0x00, // nop
+	0xF0, 0x00, // nop
+	0xA0, 0x17, // j WHILE
+	0xF0, 0x00, // nop
+	0xFF, 0xFF //EXIT: This is a psuedo-instruction that will signal the end of the code for our processor
 };
 
 uint16_t CPU::pc;
@@ -92,15 +94,15 @@ void CPU::Init(){
 void CPU::PrintState() {
 	system("cls"); //Clearing console with Windows only function. If compiled elsewhere, it will fail.
 	printf("--------------------------\n");
-	printf("|     PC: %X | Instr: %X |\n", pc - 1, Memory::instr[pc - 1]);
+	printf("|     PC: %X | Instr: %X%X |\n", pc - 2, Memory::instr[pc - 2], Memory::instr[pc - 1]);
 	printf("--------------------------\n");
 
 	printf("-----------------\t----------------\n");
 	printf("|     MEMORY    |\t| REGISTER FILE |\n");
 	printf("-----------------\t----------------\n");
-	for (int i = 0; i < 64; i++) {
+	for (int i = 0; i < 32; i++) {
 		if (i < 8) {
-			printf("| [%X] %X \t|\t| $R%d: %d \t|\n", i, Memory::data[i], i, Memory::registers[i]);
+			printf("| [%X] %X \t|\t| $R%d: %d \t|\n", i*2, Memory::data[i], i, Memory::registers[i]);
 		}
 		else if (i == 8) {
 			printf("| [%X] %X \t|\t----------------\n", i, Memory::data[i]);
@@ -110,6 +112,7 @@ void CPU::PrintState() {
 		}
 	}
 
+	printf("\nPress any key to continue");
 	getchar(); //Wait for the user to input something before we cont
 }
 
@@ -163,7 +166,10 @@ I-type: 4b op, 3b rs, 3b rt, 6b imm
 J-type: 4b op, 12b imm
 */
 void CPU::fetchInstr(){
-	uint16_t instr = Memory::instr[pc];
+	uint16_t inshi = Memory::instr[pc] << 8;
+	uint16_t inslo = Memory::instr[pc + 1];
+	
+	uint16_t instr = inshi | inslo;
 
 	Memory::fetch[0] = (instr & 0x0E00) >> 9; //SREG
 	Memory::fetch[1] = (instr & 0x01C0) >> 6; //TREG
@@ -172,7 +178,7 @@ void CPU::fetchInstr(){
 	Memory::fetch[4] = instr & 0x003F; //IMM6
 	Memory::fetch[5] = instr & 0x0FFF; //IMM12
 	Memory::fetch[6] = (instr & 0xFF00) >> 12; //OPCODE
-	pc += 1; // We're incrementing by 1 here, because we work with 2 bytes instead of 1 at a time
+	pc += 2; // We're incrementing by 1 here, because we work with 2 bytes instead of 1 at a time
 }
 
 /* Instruction Decode
@@ -234,7 +240,7 @@ void CPU::execute(){
 		}
 		break;
 	case 0xA: //J
-		pc = (pc & 0xf000) | ((int16_t)Memory::exec[0][5] /*<< 2*/); //nPC = (PC & 0xf000) | (target << 2);
+		pc = (pc & 0xf000) | ((int16_t)Memory::exec[0][5]); //nPC = (PC & 0xf000) | (target);
 		break;
 	case 0xF: //NOP or our pseudo-end instruction
 		if (Memory::exec[0][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
@@ -290,6 +296,7 @@ void CPU::resolve(){
 			Memory::fetch[i] = 0;
 		}
 		Memory::fetch[6] = 0xF;
+		pc -= 2; //Go back to the instruction it was supposed to be on
 	}
 
 	/*ID/EX Forward*/
