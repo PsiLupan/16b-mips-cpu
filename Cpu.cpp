@@ -1,6 +1,6 @@
 #include "Cpu.h"
 
-const std::array<uint16_t, 47> program = {
+const std::array<uint16_t, 55> program = {
 	0x149F, // addi $v0, $v0, 31
 	0x1FC5, // addi $a1, $a1, 5
 	0x1D90, // addi $a0, $a0, 16
@@ -12,7 +12,9 @@ const std::array<uint16_t, 47> program = {
 	0x190F, // addi $v2, $v2, 15
 	0x316C, // sll $v3, $v2, 4
 	0x16D0, // addi $v1, $v1, 16
-	0x8E08, // //WHILE: blez $a1, EXIT (PC + 2 + Offset() << 2) = PC relative location
+	0xF000, // nop
+	0xF000, // nop
+	0x8E09, // //WHILE: blez $a1, EXIT (PC + 2 + Offset() << 2) = PC relative location
 	0xF000, // nop
 	0xF000, // nop
 	0x024C, // xor $t1, $t1, $t1
@@ -24,10 +26,12 @@ const std::array<uint16_t, 47> program = {
 	0x304C, // sll $t1, $t1, 4
 	0x9000, // beq $t0, $t1, ELSE
 	0x2208, // slt $t1, $t1, $t0
+	0xF000, // nop
+	0xF000, // nop
 	0x8204, // blez $t1, CONT (PC + 2 + Offset() << 2) = PC relative location
 	0xF000, // nop
 	0xF000, // nop
-	0xA000, // j ELSE
+	0xA047, // j ELSE
 	0x5093, // CONT: srl $v0, $v0, 3
 	0x069B, // or $v1, $v1, $v0
 	0x024C, // xor $t1, $t1, $t1
@@ -37,6 +41,8 @@ const std::array<uint16_t, 47> program = {
 	0x304F, // sll $t1, $t1, 7
 	0x3049, // sll $t1, $t1, 1
 	0x6A40, // sw $t1, 0($a0)
+	0xF000, // nop
+	0xF000, // nop
 	0xA05C, // j PELSE (PC + 2)|Upper 4b + Offset(92) = Address
 	0x3122, // ELSE: sll $v2, $v2, 2
 	0x0B2C, // xor $v3, $v3, $v2
@@ -47,6 +53,8 @@ const std::array<uint16_t, 47> program = {
 	0x6A40, // sw $t1, 0($a0)
 	//PELSE:
 	0x1D82, // addi $a0, $a0, 2
+	0xF000, // nop
+	0xF000, // nop
 	0xA018, // j WHILE
 	0xFFFF //EXIT: This is a psuedo-instruction that will signal the end of the code for our processor
 };
@@ -225,7 +233,7 @@ void CPU::execute(){
 		}
 		break;
 	case 0xA: //J
-		pc = (pc & 0xf000) | ((int16_t)Memory::exec[0][5] << 2); //nPC = (PC & 0xf000) | (target << 2);
+		pc = (pc & 0xf000) | ((int16_t)Memory::exec[0][5] /*<< 2*/); //nPC = (PC & 0xf000) | (target << 2);
 		break;
 	case 0xF: //NOP or our pseudo-end instruction
 		if (Memory::exec[0][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
@@ -265,8 +273,11 @@ void CPU::writeback(){
 	if (Memory::write[0][6] == 0x7){
 		Memory::registers[Memory::write[0][8]] = Memory::write[0][0]; //TREG = Result
 	}
-	else if (Memory::write[0][6] <= 0x05){
+	else if (Memory::write[0][6] == 0x0){
 		Memory::registers[Memory::write[0][2]] = Memory::write[0][0]; //DREG = Result
+	}
+	else if (Memory::write[0][6] <= 0x5){
+		Memory::registers[Memory::write[0][8]] = Memory::write[0][0]; //TREG = Result
 	}
 }
 

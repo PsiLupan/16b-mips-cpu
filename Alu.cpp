@@ -22,7 +22,7 @@ void ALU::runWithFunc(uint16_t exec[2][9]){
 }
 
 void ALU::addi(uint16_t exec[2][9]){
-	exec[1][RESULT] = (int16_t)exec[0][TREGVAL] + (int16_t)exec[0][IMM6];
+	exec[1][RESULT] = (int16_t)exec[0][SREGVAL] + (int16_t)exec[0][IMM6];
 }
 
 void ALU::slt(uint16_t exec[2][9]) {
