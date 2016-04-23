@@ -92,16 +92,6 @@ void CPU::PrintState() {
 	printf("--------------------------\n");
 	printf("|     PC: %X | Instr: %X%X |\n", pc - 2, Memory::instr[pc - 2], Memory::instr[pc - 1]);
 	printf("--------------------------\n");
-	if (pc >= 8) {
-		printf("------------------------------\n");
-		printf("|     WBPC: %X | Instr: %X%X |\n", pc - 8, Memory::instr[pc - 8], Memory::instr[pc - 7]);
-		printf("------------------------------\n");
-	}
-	else {
-		printf("------------------------------\n");
-		printf("|     WBPC: 0 | Instr: 0      |\n");
-		printf("------------------------------\n");
-	}
 
 	printf("-----------------\t-------------------------\n");
 	printf("|     MEMORY    |\t|   REGISTER FILE \t|\n");
