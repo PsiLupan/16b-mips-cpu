@@ -1,6 +1,6 @@
 #include "Cpu.h"
 
-const std::array<uint8_t, 126> program = {
+const std::array<uint8_t, 104> program = {
 	0x1D, 0x90, // addi $a0, $a0, 16
 	0x14, 0x9F, // addi $v0, $v0, 31
 	0x1F, 0xC5, // addi $a1, $a1, 5
@@ -50,7 +50,7 @@ const std::array<uint8_t, 126> program = {
 	0x1D, 0x82, // PELSE: addi $a0, $a0, 2
 	0xF0, 0x00, // nop
 	0xF0, 0x00, // nop
-	0xA0, 0x28, // j WHILE
+	0xA0, 0x25, // j WHILE
 	0xF0, 0x00, // nop
 	0xFF, 0xFF //EXIT: This is a psuedo-instruction that will signal the end of the code for our processor
 };
