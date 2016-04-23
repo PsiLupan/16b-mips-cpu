@@ -1,35 +1,33 @@
 #include "Cpu.h"
 
-const std::array<uint8_t, 112> program = {
-	0x14, 0x9F, // addi $v0, $v0, 31
+const std::array<uint8_t, 126> program = {
 	0x1D, 0x90, // addi $a0, $a0, 16
+	0x14, 0x9F, // addi $v0, $v0, 31
 	0x1F, 0xC5, // addi $a1, $a1, 5
 	0x07, 0x98, // add $v1, $v1, $a0
 	0x19, 0x0F, // addi $v2, $v2, 15
-	0x30, 0xDF, // sll $v1, $v1, 7
 	0x14, 0x9F, // addi $v0, $v0, 31
+	0x30, 0xDF, // sll $v1, $v1, 7
+	0x31, 0x6C, // sll $v3, $v2, 4
 	0x30, 0xD9, // sll $v1, $v1, 1
 	0x14, 0x82, // addi $v0, $v0, 2
-	0x31, 0x6C, // sll $v3, $v2, 4
 	0x16, 0xD0, // addi $v1, $v1, 16
-	0x8E, 0x0B, // //WHILE: blez $a1, EXIT (PC + Offset() << 2) = PC relative location
+	0x8E, 0x06, // //WHILE: blez $a1, EXIT (PC + (Offset() << 2) + 2) = PC relative location
 	0xF0, 0x00, // nop
 	0xF0, 0x00, // nop
 	0x02, 0x4C, // xor $t1, $t1, $t1
 	0x12, 0x41, // addi $t1, $t1, 1
 	0x0E, 0x79, // sub $a1, $a1, $t1
-	0x71, 0x80, // lw $t0, 0($a0)	
+	0x71, 0x80, // lw $t0, 0($a0)
 	0x02, 0x4C, // xor $t1, $t1, $t1
 	0x12, 0x50, // addi $t1, $t1, 16
 	0x30, 0x4C, // sll $t1, $t1, 4
-	0x90, 0x05, // beq $t0, $t1, ELSE
-	0xF0, 0x00, // nop
-	0xF0, 0x00, // nop
+	0x90, 0x04, // beq $t0, $t1, ELSE
 	0x22, 0x08, // slt $t1, $t1, $t0
-	0x82, 0x01, // blez $t1, CONT (PC + Offset() << 2) = PC relative location
+	0x82, 0x01, // blez $t1, CONT (PC + (Offset() << 2) + 2) = PC relative location
 	0xF0, 0x00, // nop
 	0xF0, 0x00, // nop
-	0xA0, 0x37, // j ELSE
+	0xA0, 0x25, // j ELSE
 	0x50, 0x93, // CONT: srl $v0, $v0, 3
 	0x06, 0x9B, // or $v1, $v1, $v0
 	0x02, 0x4C, // xor $t1, $t1, $t1
@@ -41,7 +39,7 @@ const std::array<uint8_t, 112> program = {
 	0x6A, 0x40, // sw $t1, 0($a0)
 	0xF0, 0x00, // nop
 	0xF0, 0x00, // nop
-	0xA0, 0x35, // j PELSE (PC + 2)|Upper 4b + Offset() = Address
+	0xA0, 0x32, // j PELSE (PC + 2)|Upper 4b + Offset() = Address
 	0x31, 0x22, // ELSE: sll $v2, $v2, 2
 	0x0B, 0x2C, // xor $v3, $v3, $v2
 	0x02, 0x4C, // xor $t1, $t1, $t1
@@ -52,7 +50,7 @@ const std::array<uint8_t, 112> program = {
 	0x1D, 0x82, // PELSE: addi $a0, $a0, 2
 	0xF0, 0x00, // nop
 	0xF0, 0x00, // nop
-	0xA0, 0x17, // j WHILE
+	0xA0, 0x28, // j WHILE
 	0xF0, 0x00, // nop
 	0xFF, 0xFF //EXIT: This is a psuedo-instruction that will signal the end of the code for our processor
 };
@@ -94,16 +92,26 @@ void CPU::PrintState() {
 	printf("--------------------------\n");
 	printf("|     PC: %X | Instr: %X%X |\n", pc - 2, Memory::instr[pc - 2], Memory::instr[pc - 1]);
 	printf("--------------------------\n");
+	if (pc >= 8) {
+		printf("------------------------------\n");
+		printf("|     WBPC: %X | Instr: %X%X |\n", pc - 8, Memory::instr[pc - 8], Memory::instr[pc - 7]);
+		printf("------------------------------\n");
+	}
+	else {
+		printf("------------------------------\n");
+		printf("|     WBPC: 0 | Instr: 0      |\n");
+		printf("------------------------------\n");
+	}
 
-	printf("-----------------\t----------------\n");
-	printf("|     MEMORY    |\t| REGISTER FILE |\n");
-	printf("-----------------\t----------------\n");
+	printf("-----------------\t-------------------------\n");
+	printf("|     MEMORY    |\t|   REGISTER FILE \t|\n");
+	printf("-----------------\t-------------------------\n");
 	for (int i = 0; i < 32; i++) {
 		if (i < 8) {
-			printf("| [%X] %X \t|\t| $R%d: %X (%d) \t|\n", i * 2, Memory::data[i], i, Memory::registers[i], Memory::registers[i]);
+			printf("| [%X] %X \t|\t| $R%d: %X(%d) \t|\n", i * 2, Memory::data[i], i, Memory::registers[i], Memory::registers[i]);
 		}
 		else if (i == 8) {
-			printf("| [%X] %X \t|\t----------------\n", i, Memory::data[i]);
+			printf("| [%X] %X \t|\t-------------------------\n", i, Memory::data[i]);
 		}
 		else {
 			printf("| [%X] %X \t|\n", i, Memory::data[i]);
@@ -199,7 +207,7 @@ void CPU::decodeInstr(){
 
 /*Execution*/
 void CPU::execute(){
-	for (int i = 0; i < 9; i++){
+	for (int i = 0; i < 9; i++) {
 		Memory::exec[1][i] = Memory::exec[0][i];
 	}
 
@@ -258,47 +266,47 @@ void CPU::execute(){
 		break;
 	
 	case 0x8: //BLEZ
-		if ((int16_t)Memory::exec[0][0] <= 0) { //SREGV <= 0
-			pc = pc + (Memory::exec[0][IMM6] << 2); //pc = pc + imm6 << 2
+		if ((int16_t)Memory::exec[0][SREGVAL] <= 0) { //SREGV <= 0
+			pc = pc + ((int16_t)Memory::exec[0][IMM6] << 2) + 2; //pc = pc + imm6 << 2
 		}
 		break;
 	
 	case 0x9: //BEQ
 		if (Memory::exec[0][SREGVAL] == Memory::exec[0][TREGVAL]) { //SREGV == TREGV
-			pc = pc + (Memory::exec[0][IMM6] << 2); //pc = pc + imm6 << 2
+			pc = pc + ((int16_t)Memory::exec[0][IMM6] << 2) + 2;
 		}
 		break;
 	
 	case 0xA: //J
-		pc = (pc & 0xF000) | ((int16_t)Memory::exec[0][IMM12]); //nPC = (PC & 0xf000) | (target);
+		pc = (pc & 0xF000) + ((int16_t)Memory::exec[0][IMM12]);
 		break;
 	
 	case 0xF: //NOP or our pseudo-end instruction
 		if (Memory::exec[0][IMM12] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
 			state = EXIT;
 		}
-		return;
+		break;
 	
 	default:
 		printf("Invalid Instruction!");
 		state = EXIT;
-		return;
+		break;
 	}
 }
 
 /*Memory Stage*/
 void CPU::memory() {
-	for (int i = 0; i < 9; i++){
+	for (int i = 0; i < 9; i++) {
 		Memory::mem[1][i] = Memory::mem[0][i];
 	}
 
 	/*Instead of using Control Bits, we'll just act with the current OPCode*/
-	switch (Memory::mem[0][6]){
+	switch (Memory::mem[0][OPCODE]){
 		case 0x6: //SW
-			Memory::data.at(Memory::mem[0][0]) = Memory::mem[0][1];
+			Memory::data.at(Memory::mem[0][RESULT]) = Memory::mem[0][TREGVAL];
 			break;
 		case 0x7: //LW
-			Memory::mem[1][0] = Memory::data.at(Memory::mem[0][0]);
+			Memory::mem[1][RESULT] = Memory::data.at(Memory::mem[0][TREGVAL]);
 			break;	
 	}
 }
@@ -308,52 +316,70 @@ void CPU::writeback(){
 	if (Memory::write[OPCODE] == 0x0){ //ALU OP
 		Memory::registers[Memory::write[DREG]] = Memory::write[RESULT]; //DREG = Result
 	}
-	else if ((Memory::write[OPCODE] <= 0x5 && Memory::write[OPCODE] != 0x0) || Memory::write[OPCODE] == 0x7){ //LW
+	else if (Memory::write[OPCODE] <= 0x5 || Memory::write[OPCODE] == 0x7){ //LW
 		Memory::registers[Memory::write[TREG]] = Memory::write[RESULT]; //TREG = Result
 	}
 }
 
 void CPU::resolve(){
-	/*IF/ID Forward*/
+	/*IF/ID Data Hazard*/
 	if (Memory::decode[1][6] == 0x7 //If OPCode == LW, it's our only mem_read
-		&& (Memory::decode[1][2] == Memory::fetch[0] || Memory::decode[1][2] == Memory::fetch[1])){
-		for (int i = 0; i < 7; i++){
+		&& (Memory::decode[1][TREG] == Memory::fetch[0] || Memory::decode[1][TREG] == Memory::fetch[1])){
+		for (int i = 0; i < 6; i++){
 			Memory::fetch[i] = 0;
 		}
 		Memory::fetch[6] = 0xF;
-		pc = pc - 4; //Go back to the instruction it was supposed to be on
+		
+		pc = pc - 4; //Go back 2 instruction
 	}
 
 	/*ID/EX Forward*/
-	if (Memory::exec[1][6] == 0x0){ //If OPCode == 0x0 it's a reg_write with dreg set
-		if (Memory::exec[1][2] == Memory::decode[1][7]){ //If exec DREG == decode SREG
-			Memory::decode[1][0] = Memory::exec[1][0]; //SREGVAL = ALUResult
+	if (Memory::exec[1][OPCODE] <= 0x5 && Memory::exec[1][OPCODE] != 0x1){ //If OPCode <= 0x5 || 0x7 it's a reg_write
+		if (Memory::exec[1][DREG] == Memory::decode[1][SREG]){
+			Memory::decode[1][SREGVAL] = Memory::exec[1][RESULT];
 		}
-		else if (Memory::exec[1][2] == Memory::decode[1][8]){  //If exec DREG == decode TREG
-			Memory::decode[1][1] = Memory::exec[1][0];  //TREGVAL = ALUResult
+		else if (Memory::exec[1][DREG] == Memory::decode[1][TREG]){
+			Memory::decode[1][TREGVAL] = Memory::exec[1][RESULT]; 
+		}
+	}
+	else if (Memory::exec[1][OPCODE] == 0x1 || Memory::exec[1][OPCODE] == 0x7) {
+		if (Memory::exec[1][TREG] == Memory::decode[1][SREG]) {
+			Memory::decode[1][SREGVAL] = Memory::exec[1][RESULT];
+		}
+		else if (Memory::exec[1][TREG] == Memory::decode[1][TREG]) {
+			Memory::decode[1][TREGVAL] = Memory::exec[1][RESULT];
 		}
 	}
 
 	/*Mem Forward*/
-	if (Memory::mem[1][6] == 0x0 || Memory::mem[1][6] == 0x7){ //If OPCode == 0x0 || 0x7, it's a reg_write w/ dreg
-		if (Memory::exec[1][2] != Memory::decode[1][7] && Memory::mem[1][2] == Memory::decode[1][7]){ //DREG == SREG
-			if (Memory::mem[1][6] == 0x7){ //If OPCode == LW (mem_read)
-				Memory::decode[1][0] = Memory::mem[1][0]; //SREGVAL = Memory Data
+	if (Memory::mem[1][OPCODE] <= 0x5 &&  Memory::mem[1][OPCODE] != 0x1){ //If OPCode <= 0x5 || 0x7, it's a reg_write
+		if (Memory::exec[1][DREG] != Memory::decode[1][SREG] && Memory::mem[1][DREG] == Memory::decode[1][SREG]){
+			Memory::decode[1][SREGVAL] = Memory::mem[1][0]; //SREGVAL = ALUResult
+		}
+		else if (Memory::exec[1][DREG] != Memory::decode[1][TREG] && Memory::mem[1][DREG] == Memory::decode[1][TREG]){
+			Memory::decode[1][TREGVAL] = Memory::mem[1][0];
+		}
+	}
+	else if (Memory::mem[1][OPCODE] == 0x1 || Memory::mem[1][OPCODE] == 0x7) {
+		if (Memory::exec[1][TREG] != Memory::decode[1][SREG] && Memory::mem[1][TREG] == Memory::decode[1][SREG]) {
+			if (Memory::mem[1][OPCODE] == 0x7) { //LW
+				Memory::decode[1][SREGVAL] = Memory::mem[1][0]; //SREGVAL = Memory Data
 			}
-			else{
-				Memory::decode[1][0] = Memory::mem[1][0]; //SREGVAL = ALUResult
+			else {
+				Memory::decode[1][SREGVAL] = Memory::mem[1][0]; //SREGVAL = ALUResult
 			}
 		}
-		else if (Memory::exec[1][2] != Memory::decode[1][8] && Memory::mem[1][2] == Memory::decode[1][8]){ //DREG == TREG
-			if (Memory::mem[1][6] == 0x7){ //If OPCode == LW (mem_read)
-				Memory::decode[1][1] = Memory::mem[1][0];
+		else if (Memory::exec[1][TREG] != Memory::decode[1][TREG] && Memory::mem[1][TREG] == Memory::decode[1][TREG]) {
+			if (Memory::mem[1][OPCODE] == 0x7) { //If OPCode == LW (mem_read)
+				Memory::decode[1][TREGVAL] = Memory::mem[1][0];
 			}
-			else{
-				Memory::decode[1][1] = Memory::mem[1][0];
+			else {
+				Memory::decode[1][TREGVAL] = Memory::mem[1][0];
 			}
 		}
 	}
 }
+
 
 CPU *CPU::getInstance(){
 	static CPU instance;
