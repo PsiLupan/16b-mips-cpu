@@ -129,7 +129,7 @@ void CPU::swapBuffers() {
 	for (int i = 0; i < 9; i++) {
 		Memory::exec[0][i] = Memory::decode[1][i];
 		Memory::mem[0][i] = Memory::exec[1][i];
-		Memory::write[0][i] = Memory::mem[1][i];
+		Memory::write[i] = Memory::mem[1][i];
 	}
 }
 
@@ -176,7 +176,8 @@ void CPU::fetchInstr(){
 	Memory::fetch[4] = instr & 0x003F; //IMM6
 	Memory::fetch[5] = instr & 0x0FFF; //IMM12
 	Memory::fetch[6] = (instr & 0xFF00) >> 12; //OPCODE
-	pc = pc + 2; // We're incrementing by 1 here, because we work with 2 bytes instead of 1 at a time
+	
+	pc = pc + 2;
 }
 
 /* Instruction Decode
@@ -185,15 +186,15 @@ void CPU::decodeInstr(){
 	uint16_t sreg = Memory::decode[0][0];
 	uint16_t treg = Memory::decode[0][1];
 
-	Memory::decode[1][0] = Memory::registers[sreg]; // SREG Val
-	Memory::decode[1][1] = Memory::registers[treg]; // TREG Val
-	Memory::decode[1][2] = Memory::decode[0][2]; // DREG
-	Memory::decode[1][3] = Memory::decode[0][3];
-	Memory::decode[1][4] = Memory::decode[0][4];
-	Memory::decode[1][5] = Memory::decode[0][5];
-	Memory::decode[1][6] = Memory::decode[0][6];
-	Memory::decode[1][7] = Memory::decode[0][0]; //SREG
-	Memory::decode[1][8] = Memory::decode[0][1]; //TREG
+	Memory::decode[1][SREGVAL] = Memory::registers[sreg];
+	Memory::decode[1][TREGVAL] = Memory::registers[treg];
+	Memory::decode[1][DREG] = Memory::decode[0][2];
+	Memory::decode[1][SHFUNC] = Memory::decode[0][3];
+	Memory::decode[1][IMM6] = Memory::decode[0][4];
+	Memory::decode[1][IMM12] = Memory::decode[0][5];
+	Memory::decode[1][OPCODE] = Memory::decode[0][6];
+	Memory::decode[1][SREG] = Memory::decode[0][0];
+	Memory::decode[1][TREG] = Memory::decode[0][1];
 }
 
 /*Execution*/
@@ -202,52 +203,86 @@ void CPU::execute(){
 		Memory::exec[1][i] = Memory::exec[0][i];
 	}
 
-	switch (Memory::exec[0][6]){ //Index 6 = Opcode
+	switch (Memory::exec[0][OPCODE]){
+	
 	case 0x0: //ALU Func
-		ALU::runWithFunc(Memory::exec);
+		switch (Memory::exec[0][SHFUNC]) {
+			case 0: //ADD
+				Memory::exec[1][RESULT] = (int16_t)Memory::exec[0][SREGVAL] + (int16_t)Memory::exec[0][TREGVAL];
+				break;
+			case 1: //SUB
+				Memory::exec[1][RESULT] = (int16_t)Memory::exec[0][SREGVAL] - (int16_t)Memory::exec[0][TREGVAL];
+				break;
+			case 2: //AND
+				Memory::exec[1][RESULT] = Memory::exec[0][SREGVAL] & Memory::exec[0][TREGVAL];
+				break;
+			case 3: //OR
+				Memory::exec[1][RESULT] = Memory::exec[0][SREGVAL] | Memory::exec[0][TREGVAL];
+				break;
+			case 4: //XOR
+				Memory::exec[1][RESULT] = Memory::exec[0][SREGVAL] ^ Memory::exec[0][TREGVAL];
+				break;
+			default:
+				printf("Invalid ALU Function");
+				state = EXIT;
+				return;
+		}
 		break;
+	
 	case 0x1: //ADDI
-		ALU::addi(Memory::exec);
+		Memory::exec[1][RESULT] = (int16_t)Memory::exec[0][SREGVAL] + (int16_t)Memory::exec[0][IMM6];
 		break;
+	
 	case 0x2: //SLT
-		ALU::slt(Memory::exec);
+		Memory::exec[1][RESULT] = (int16_t)Memory::exec[0][TREGVAL] < (int16_t)Memory::exec[0][SREGVAL];
 		break;
+	
 	case 0x3: //SLL
-		ALU::sll(Memory::exec);
+		Memory::exec[1][RESULT] = Memory::exec[0][TREGVAL] << Memory::exec[0][SHFUNC];
 		break;
+	
 	case 0x4: //SRA
-		/*Our instructions currently do not use this, so it will not fire.*/
-		ALU::sra(Memory::exec);
+		/*Our instructions currently do not use this, so it will not fire.
+		This relies on the fact that Visual Studio compiles a right-shift as a an arithmatic shift, if it's a signed value.
+		Therefore, this may not work if you compile with another compiler.*/
+		Memory::exec[1][RESULT] = (int16_t)Memory::exec[0][TREGVAL] >> Memory::exec[0][SHFUNC];
 		break;
+	
 	case 0x5: //SRL
-		ALU::srl(Memory::exec);
+		Memory::exec[1][RESULT] = Memory::exec[0][TREGVAL] >> Memory::exec[0][SHFUNC];
 		break;
+	
 	case 0x6: //SW
 	case 0x7: //LW
-		ALU::mem(Memory::exec);
+		Memory::exec[1][RESULT] = (int16_t)Memory::exec[0][SREGVAL] + (int16_t)Memory::exec[0][IMM6];
 		break;
+	
 	case 0x8: //BLEZ
 		if ((int16_t)Memory::exec[0][0] <= 0) { //SREGV <= 0
-			pc = pc + (Memory::exec[0][4] << 2); //pc = pc + imm6 << 2
+			pc = pc + (Memory::exec[0][IMM6] << 2); //pc = pc + imm6 << 2
 		}
 		break;
+	
 	case 0x9: //BEQ
-		if (Memory::exec[0][0] == Memory::exec[0][1]) { //SREGV == TREGV
-			pc = pc + (Memory::exec[0][4] << 2); //pc = pc + imm6 << 2
+		if (Memory::exec[0][SREGVAL] == Memory::exec[0][TREGVAL]) { //SREGV == TREGV
+			pc = pc + (Memory::exec[0][IMM6] << 2); //pc = pc + imm6 << 2
 		}
 		break;
+	
 	case 0xA: //J
-		pc = (pc & 0xf000) | ((int16_t)Memory::exec[0][5]); //nPC = (PC & 0xf000) | (target);
+		pc = (pc & 0xF000) | ((int16_t)Memory::exec[0][IMM12]); //nPC = (PC & 0xf000) | (target);
 		break;
+	
 	case 0xF: //NOP or our pseudo-end instruction
-		if (Memory::exec[0][5] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
+		if (Memory::exec[0][IMM12] != 0){ //Assume that if IMM12 if anything other than 0, it's our pseudo-instruction
 			state = EXIT;
 		}
 		return;
+	
 	default:
 		printf("Invalid Instruction!");
 		state = EXIT;
-		break;
+		return;
 	}
 }
 
@@ -270,16 +305,11 @@ void CPU::memory() {
 
 /*Writeback Stage*/
 void CPU::writeback(){
-	/*Copy WB to the last buffer to be used by forwarding*/
-	for (int i = 0; i < 9; i++){
-		Memory::write[1][i] = Memory::write[0][i];
+	if (Memory::write[OPCODE] == 0x0){ //ALU OP
+		Memory::registers[Memory::write[DREG]] = Memory::write[RESULT]; //DREG = Result
 	}
-
-	if (Memory::write[0][6] == 0x0){ //ALU OP
-		Memory::registers[Memory::write[0][2]] = Memory::write[0][0]; //DREG = Result
-	}
-	else if (Memory::write[0][6] <= 0x5 || Memory::write[0][6] == 0x7){ //LW
-		Memory::registers[Memory::write[0][8]] = Memory::write[0][0]; //TREG = Result
+	else if ((Memory::write[OPCODE] <= 0x5 && Memory::write[OPCODE] != 0x0) || Memory::write[OPCODE] == 0x7){ //LW
+		Memory::registers[Memory::write[TREG]] = Memory::write[RESULT]; //TREG = Result
 	}
 }
 
@@ -291,7 +321,7 @@ void CPU::resolve(){
 			Memory::fetch[i] = 0;
 		}
 		Memory::fetch[6] = 0xF;
-		pc = pc - 2; //Go back to the instruction it was supposed to be on
+		pc = pc - 4; //Go back to the instruction it was supposed to be on
 	}
 
 	/*ID/EX Forward*/

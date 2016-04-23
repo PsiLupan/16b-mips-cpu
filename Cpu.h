@@ -1,8 +1,21 @@
 #include <array>
 #include <cstdint>
 
-#include "Alu.h"
 #include "Memory.h"
+
+/*Decode[1] and beyond*/
+#define SREGVAL 0
+#define TREGVAL 1
+#define DREG 2
+#define SHFUNC 3
+#define IMM6 4
+#define IMM12 5
+#define OPCODE 6
+#define SREG 7
+#define TREG 8
+
+/*Specifically for Exec[1] and beyond*/
+#define RESULT 0
 
 class CPU {
 private:
