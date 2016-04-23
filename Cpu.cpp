@@ -24,7 +24,7 @@ const std::array<uint8_t, 126> program = {
 	0x30, 0x4C, // sll $t1, $t1, 4
 	0x90, 0x04, // beq $t0, $t1, ELSE
 	0x22, 0x08, // slt $t1, $t1, $t0
-	0x82, 0x01, // blez $t1, CONT (PC + (Offset() << 2) + 2) = PC relative location
+	0x82, 0x02, // blez $t1, CONT (PC + (Offset() << 2) + 2) = PC relative location
 	0xF0, 0x00, // nop
 	0xF0, 0x00, // nop
 	0xA0, 0x25, // j ELSE
