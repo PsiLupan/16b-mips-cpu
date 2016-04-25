@@ -83,15 +83,22 @@ void CPU::Init(){
 	g_step = true;
 
 	state = RUN;
-
+	PrintState(); //Print the initial memory as per project requirements
 	Run();
 }
 
 void CPU::PrintState() {
 	system("cls"); //Clearing console with Windows only function. If compiled elsewhere, it will fail.
-	printf("--------------------------\n");
-	printf("|     PC: %X | Instr: %X%X |\n", pc - 2, Memory::instr[pc - 2], Memory::instr[pc - 1]);
-	printf("--------------------------\n");
+	if (pc >= 2){
+		printf("--------------------------\n");
+		printf("|     PC: %X | Instr: %X%X |\n", pc - 2, Memory::instr[pc - 2], Memory::instr[pc - 1]);
+		printf("--------------------------\n");
+	}
+	else {
+		printf("----------INIT------------\n");
+		printf("|     PC: 0 | Instr: 0    |\n");
+		printf("--------------------------\n");
+	}
 
 	printf("-----------------\t-------------------------\n");
 	printf("|     MEMORY    |\t|   REGISTER FILE \t|\n");
