@@ -1,58 +1,64 @@
 #include "Cpu.h"
 
-const std::array<uint8_t, 104> program = {
-	0x1D, 0x90, // addi $a0, $a0, 16
-	0x14, 0x9F, // addi $v0, $v0, 31
-	0x1F, 0xC5, // addi $a1, $a1, 5
-	0x07, 0x98, // add $v1, $v1, $a0
-	0x19, 0x0F, // addi $v2, $v2, 15
-	0x14, 0x9F, // addi $v0, $v0, 31
-	0x30, 0xDF, // sll $v1, $v1, 7
-	0x31, 0x6C, // sll $v3, $v2, 4
-	0x30, 0xD9, // sll $v1, $v1, 1
-	0x14, 0x82, // addi $v0, $v0, 2
-	0x16, 0xD0, // addi $v1, $v1, 16
-	0x8E, 0x06, // //WHILE: blez $a1, EXIT (PC + (Offset() << 2) + 2) = PC relative location
-	0xF0, 0x00, // nop
-	0xF0, 0x00, // nop
-	0x02, 0x4C, // xor $t1, $t1, $t1
-	0x12, 0x41, // addi $t1, $t1, 1
-	0x0E, 0x79, // sub $a1, $a1, $t1
-	0x71, 0x80, // lw $t0, 0($a0)
-	0x02, 0x4C, // xor $t1, $t1, $t1
-	0x12, 0x50, // addi $t1, $t1, 16
-	0x30, 0x4C, // sll $t1, $t1, 4
-	0x90, 0x04, // beq $t0, $t1, ELSE
-	0x22, 0x08, // slt $t1, $t1, $t0
-	0x82, 0x02, // blez $t1, CONT (PC + (Offset() << 2) + 2) = PC relative location
-	0xF0, 0x00, // nop
-	0xF0, 0x00, // nop
-	0xA0, 0x25, // j ELSE
-	0x50, 0x93, // CONT: srl $v0, $v0, 3
-	0x06, 0x9B, // or $v1, $v1, $v0
-	0x02, 0x4C, // xor $t1, $t1, $t1
-	0x12, 0x5E, // addi $t1, $t1, 30
-	0x30, 0x4B, // sll $t1, $t1, 3
-	0x12, 0x4F, // addi $t1, $t1, 15
-	0x30, 0x4F, // sll $t1, $t1, 7
-	0x30, 0x49, // sll $t1, $t1, 1
-	0x6A, 0x40, // sw $t1, 0($a0)
-	0xF0, 0x00, // nop
-	0xF0, 0x00, // nop
-	0xA0, 0x32, // j PELSE (PC + 2)|Upper 4b + Offset() = Address
-	0x31, 0x22, // ELSE: sll $v2, $v2, 2
-	0x0B, 0x2C, // xor $v3, $v3, $v2
-	0x02, 0x4C, // xor $t1, $t1, $t1
-	0x12, 0x5E, // addi $t1, $t1, 30
-	0x30, 0x4B, // sll $t1, $t1, 3
-	0x12, 0x4F, // addi $t1, $t1, 15
-	0x6A, 0x40, // sw $t1, 0($a0)
-	0x1D, 0x82, // PELSE: addi $a0, $a0, 2
-	0xF0, 0x00, // nop
-	0xF0, 0x00, // nop
-	0xA0, 0x25, // j WHILE
-	0xF0, 0x00, // nop
-	0xFF, 0xFF //EXIT: This is a psuedo-instruction that will signal the end of the code for our processor
+const std::array<uint8_t, 120> program = {
+	0x1D, 0x90, //00 addi $a0, $a0, 16
+	0x14, 0x9F, //02 addi $v0, $v0, 31
+	0x07, 0x98, //04 add $v1, $v1, $a0
+	0x19, 0x0F, //06 addi $v2, $v2, 15
+	0x14, 0x9F, //08 addi $v0, $v0, 31
+	0x30, 0xDF, //0A sll $v1, $v1, 7
+	0x1B, 0x4F, //0C addi $v3, $v3, 15
+	0x1F, 0xC5, //0E addi $a1, $a1, 5
+	0x30, 0xD9, //10 sll $v1, $v1, 1
+	0x31, 0x6C, //12 sll $v3, $v3, 4
+	0x14, 0x82, //14 addi $v0, $v0, 2
+	0x16, 0xD0, //16 addi $v1, $v1, 16
+	0x8E, 0x15, //18 WHILE: blez $a1, EXIT (PC + (Offset(21) << 2) + 2) = 24 + (84) + 2 = 114 = 0x6E
+	0xF0, 0x00, //1A nop
+	0x02, 0x4C, //1C xor $t1, $t1, $t1
+	0x12, 0x41, //1E addi $t1, $t1, 1
+	0x0E, 0x79, //20 sub $a1, $a1, $t1
+	0xF0, 0x00, //22 nop
+	0x7C, 0x00, //24 lw $t0, 0($a0)
+	0x02, 0x4C, //26 xor $t1, $t1, $t1
+	0x12, 0x50, //28 addi $t1, $t1, 16
+	0x30, 0x4C, //2A sll $t1, $t1, 4
+	0x92, 0x09, //2C beq $t0, $t1, ELSE (PC + (Offset(9) << 2) + 2) = 44 + 40 + 2 = 86 = 0x56
+	0xF0, 0x00, //2E nop
+	0xF0, 0x00, //30 nop
+	0x22, 0x08, //32 slt $t1, $t1, $t0
+	0x82, 0x02, //34 blez $t1, CONT (PC + (Offset(2) << 2) + 2) = 52 + 8 + 2 = 62 = 0x3E
+	0xF0, 0x00, //36 nop
+	0xF0, 0x00, //38 nop
+	0xA0, 0x58, //3A j ELSE (PC + 2)|Upper 4b + Offset(58) = 0x58
+	0xF0, 0x00, //3C nop
+	0xF0, 0x00, //3E nop
+	0x50, 0x93, //40 CONT: srl $v0, $v0, 3
+	0x06, 0x9B, //42 or $v1, $v1, $v0
+	0x02, 0x4C, //44 xor $t1, $t1, $t1
+	0x12, 0x5E, //46 addi $t1, $t1, 30
+	0x30, 0x4B, //48 sll $t1, $t1, 3
+	0x12, 0x4F, //4A addi $t1, $t1, 15
+	0x30, 0x4F, //4C sll $t1, $t1, 7
+	0x30, 0x49, //4E sll $t1, $t1, 1
+	0x6A, 0x40, //50 sw $t1, 0($a0)
+	0xA0, 0x5E, //52 j PELSE (PC + 2)|Upper 4b + Offset(5E) = 0x5E
+	0xF0, 0x00, //54 nop
+	0xF0, 0x00, //56 nop
+	0x31, 0x22, //58 ELSE: sll $v2, $v2, 2
+	0x0B, 0x2C, //5A xor $v3, $v3, $v2
+	0x02, 0x4C, //5C xor $t1, $t1, $t1
+	0x12, 0x5E, //5E addi $t1, $t1, 30
+	0x30, 0x4B, //60 sll $t1, $t1, 3
+	0x12, 0x4F, //62 addi $t1, $t1, 15
+	0x6A, 0x40, //64 sw $t1, 0($a0)
+	0x1D, 0x82, //66 PELSE: addi $a0, $a0, 2
+	0xF0, 0x00, //68 nop
+	0xF0, 0x00, //6A nop
+	0xA0, 0x18, //6C j WHILE
+	0xF0, 0x00, //6E nop
+	0xF0, 0x00, //70 nop
+	0xFF, 0xFF  //72 EXIT: This is a psuedo-instruction that will signal the end of the code for our processor
 };
 
 uint16_t CPU::pc;
@@ -73,11 +79,16 @@ void CPU::Init(){
 	
 	//Initialize our memory to 0 and setup the data for $a1 in memory
 	Memory::data.fill(0);
-	Memory::data[5] = 0x0101;
-	Memory::data[6] = 0x0110;
-	Memory::data[7] = 0x0011;
-	Memory::data[8] = 0x00F0;
-	Memory::data[9] = 0x00FF;
+	Memory::data[16] = 0x01;
+	Memory::data[17] = 0x01;
+	Memory::data[18] = 0x01;
+	Memory::data[19] = 0x10;
+	Memory::data[20] = 0x00;
+	Memory::data[21] = 0x11;
+	Memory::data[22] = 0x00;
+	Memory::data[23] = 0xF0;
+	Memory::data[24] = 0x00;
+	Memory::data[25] = 0xFF;
 
 	//Set step based on user input
 	g_step = true;
@@ -90,9 +101,14 @@ void CPU::Init(){
 void CPU::PrintState() {
 	system("cls"); //Clearing console with Windows only function. If compiled elsewhere, it will fail.
 	if (pc >= 2){
-		printf("--------------------------\n");
-		printf("|     PC: %X | Instr: %X%X |\n", pc - 2, Memory::instr[pc - 2], Memory::instr[pc - 1]);
-		printf("--------------------------\n");
+		if (state == EXIT) {
+			printf("---------FINISHED---------\n");
+		}
+		else {
+			printf("--------------------------\n");
+		}
+			printf("|     PC: %04X | Instr: %02X%02X |\n", pc - 2, Memory::instr[pc - 2], Memory::instr[pc - 1]);
+			printf("--------------------------\n");
 	}
 	else {
 		printf("----------INIT------------\n");
@@ -100,19 +116,19 @@ void CPU::PrintState() {
 		printf("--------------------------\n");
 	}
 
-	printf("-----------------\t-------------------------\n");
-	printf("|     MEMORY    |\t|   REGISTER FILE \t|\n");
-	printf("-----------------\t-------------------------\n");
-	for (int i = 0; i < 32; i++) {
-		if (i < 8) {
-			printf("| [%X] %X \t|\t| $R%d: %X(%d) \t|\n", i * 2, Memory::data[i], i, Memory::registers[i], Memory::registers[i]);
-		}
-		else if (i == 8) {
-			printf("| [%X] %X \t|\t-------------------------\n", i, Memory::data[i]);
-		}
-		else {
-			printf("| [%X] %X \t|\n", i, Memory::data[i]);
-		}
+	printf("-------------------------\n");
+	printf("| REGISTER FILE \t | \n");
+	printf("-------------------------\n");
+	for (int i = 0; i < 8; i++) {
+		printf("R%d: %04X (%d) \t\n", i, Memory::registers[i], Memory::registers[i]);
+	}
+	printf("-------------------------\n");
+
+	printf("-----------------|\n");
+	printf("|     MEMORY     |\n");
+	printf("-----------------|\n");
+	for (int i = 0; i <= 32; i+=2) {
+		printf("| [%X] %02X%02X \t|\n", i, Memory::data[i], Memory::data[i+1]);
 	}
 
 	printf("\nPress any key to continue");
@@ -159,6 +175,8 @@ void CPU::Run(){
 			case EXIT:
 				Shutdown();
 				return; //Exit our loop
+			case BADEXIT:
+				return;
 		}
 	}
 }
@@ -228,8 +246,8 @@ void CPU::execute(){
 				Memory::exec[1][RESULT] = Memory::exec[0][SREGVAL] ^ Memory::exec[0][TREGVAL];
 				break;
 			default:
-				printf("Invalid ALU Function");
-				state = EXIT;
+				printf("ERROR: Invalid ALU Function at PC: %X\n", pc - 2);
+				state = BADEXIT;
 				return;
 		}
 		break;
@@ -285,8 +303,8 @@ void CPU::execute(){
 		break;
 	
 	default:
-		printf("Invalid Instruction!");
-		state = EXIT;
+		printf("ERROR: Invalid Instruction at PC: %X\n", pc - 2);
+		state = BADEXIT;
 		break;
 	}
 }
@@ -296,25 +314,34 @@ void CPU::memory() {
 	for (int i = 0; i < 9; i++) {
 		Memory::mem[1][i] = Memory::mem[0][i];
 	}
+	uint16_t dhi;
+	uint16_t dlow;
 
 	/*Instead of using Control Bits, we'll just act with the current OPCode*/
 	switch (Memory::mem[0][OPCODE]){
 		case 0x6: //SW
-			Memory::data.at(Memory::mem[0][RESULT]) = Memory::mem[0][TREGVAL];
+			dhi = Memory::mem[0][TREGVAL] >> 8;
+			dlow = Memory::mem[0][TREGVAL] & 0x00FF;
+			
+			Memory::data.at(Memory::mem[0][RESULT]) = (uint8_t)dhi;
+			Memory::data.at(Memory::mem[0][RESULT] + 1) = (uint8_t)dlow;
 			break;
 		case 0x7: //LW
-			Memory::mem[1][RESULT] = Memory::data.at(Memory::mem[0][TREGVAL]);
+			dhi = Memory::data.at(Memory::mem[0][TREGVAL]) << 8;
+			dlow = Memory::data.at(Memory::mem[0][TREGVAL] + 1);
+			
+			Memory::mem[1][RESULT] = dhi | dlow;
 			break;	
 	}
 }
 
 /*Writeback Stage*/
-void CPU::writeback(){
-	if (Memory::write[OPCODE] == 0x0){ //ALU OP
-		Memory::registers[Memory::write[DREG]] = Memory::write[RESULT]; //DREG = Result
-	}
-	else if (Memory::write[OPCODE] <= 0x5 || Memory::write[OPCODE] == 0x7){ //LW
+void CPU::writeback() {
+	if (Memory::write[OPCODE] == 0x1 || Memory::write[OPCODE] == 0x7) { //I - Type
 		Memory::registers[Memory::write[TREG]] = Memory::write[RESULT]; //TREG = Result
+	}
+	else if (Memory::write[OPCODE] == 0x0 || Memory::write[OPCODE] <= 0x5) { //R - Type
+		Memory::registers[Memory::write[DREG]] = Memory::write[RESULT]; //DREG = Result
 	}
 }
 
@@ -330,7 +357,7 @@ void CPU::resolve(){
 		pc = pc - 4; //Go back 2 instruction
 	}
 
-	/*ID/EX Forward*/
+	/*EX -> ID Forward*/
 	if (Memory::exec[1][OPCODE] <= 0x5 && Memory::exec[1][OPCODE] != 0x1){ //If OPCode <= 0x5 || 0x7 it's a reg_write
 		if (Memory::exec[1][DREG] == Memory::decode[1][SREG]){
 			Memory::decode[1][SREGVAL] = Memory::exec[1][RESULT];
@@ -348,7 +375,7 @@ void CPU::resolve(){
 		}
 	}
 
-	/*Mem Forward*/
+	/*Mem -> ID Forward*/
 	if (Memory::mem[1][OPCODE] <= 0x5 &&  Memory::mem[1][OPCODE] != 0x1){ //If OPCode <= 0x5 || 0x7, it's a reg_write
 		if (Memory::exec[1][DREG] != Memory::decode[1][SREG] && Memory::mem[1][DREG] == Memory::decode[1][SREG]){
 			Memory::decode[1][SREGVAL] = Memory::mem[1][0]; //SREGVAL = ALUResult

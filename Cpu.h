@@ -30,7 +30,7 @@ private:
 	static void resolve();
 
 	enum CPU_STATE {
-		RUN, EXIT
+		RUN, EXIT, BADEXIT
 	};
 	static CPU_STATE state;
 
