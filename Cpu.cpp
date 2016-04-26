@@ -13,12 +13,12 @@ const std::array<uint8_t, 120> program = {
 	0x31, 0x6C, //12 sll $v3, $v3, 4
 	0x14, 0x82, //14 addi $v0, $v0, 2
 	0x16, 0xD0, //16 addi $v1, $v1, 16
-	0x8E, 0x15, //18 WHILE: blez $a1, EXIT (PC + (Offset(21) << 2) + 2) = 24 + (84) + 2 = 114 = 0x6E
+	0x8E, 0x14, //18 WHILE: blez $a1, EXIT (PC + (Offset(21) << 2) + 2) = 24 + (84) + 2 = 114 = 0x6E
 	0xF0, 0x00, //1A nop
 	0x02, 0x4C, //1C xor $t1, $t1, $t1
 	0x12, 0x41, //1E addi $t1, $t1, 1
-	0x0E, 0x79, //20 sub $a1, $a1, $t1
-	0xF0, 0x00, //22 nop
+	0xF0, 0x00, //20 nop
+	0x0E, 0x79, //22 sub $a1, $a1, $t1
 	0x7C, 0x00, //24 lw $t0, 0($a0)
 	0x02, 0x4C, //26 xor $t1, $t1, $t1
 	0x12, 0x50, //28 addi $t1, $t1, 16
@@ -51,7 +51,7 @@ const std::array<uint8_t, 120> program = {
 	0x12, 0x5E, //5E addi $t1, $t1, 30
 	0x30, 0x4B, //60 sll $t1, $t1, 3
 	0x12, 0x4F, //62 addi $t1, $t1, 15
-	0x6A, 0x40, //64 sw $t1, 0($a0)
+	0x6C, 0x40, //64 sw $t1, 0($a0)
 	0x1D, 0x82, //66 PELSE: addi $a0, $a0, 2
 	0xF0, 0x00, //68 nop
 	0xF0, 0x00, //6A nop
@@ -100,21 +100,14 @@ void CPU::Init(){
 
 void CPU::PrintState() {
 	system("cls"); //Clearing console with Windows only function. If compiled elsewhere, it will fail.
-	if (pc >= 2){
-		if (state == EXIT) {
-			printf("---------FINISHED---------\n");
-		}
-		else {
-			printf("--------------------------\n");
-		}
-			printf("|     PC: %04X | Instr: %02X%02X |\n", pc - 2, Memory::instr[pc - 2], Memory::instr[pc - 1]);
-			printf("--------------------------\n");
+	if (state == EXIT) {
+		printf("---------FINISHED---------\n");
 	}
 	else {
-		printf("----------INIT------------\n");
-		printf("|     PC: 0 | Instr: 0    |\n");
 		printf("--------------------------\n");
 	}
+	printf("|     PC: %04X | Instr: %02X%02X |\n", pc, Memory::instr[pc], Memory::instr[pc + 1]);
+	printf("--------------------------\n");
 
 	printf("-------------------------\n");
 	printf("| REGISTER FILE \t | \n");
