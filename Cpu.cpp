@@ -42,7 +42,7 @@ const std::array<uint8_t, 120> program = {
 	0x30, 0x4F, //4C sll $t1, $t1, 7
 	0x30, 0x49, //4E sll $t1, $t1, 1
 	0x6A, 0x40, //50 sw $t1, 0($a0)
-	0xA0, 0x5E, //52 j PELSE (PC + 2)|Upper 4b + Offset(5E) = 0x5E
+	0xA0, 0x66, //52 j PELSE (PC + 2)|Upper 4b + Offset(5E) = 0x66
 	0xF0, 0x00, //54 nop
 	0xF0, 0x00, //56 nop
 	0x31, 0x22, //58 ELSE: sll $v2, $v2, 2
