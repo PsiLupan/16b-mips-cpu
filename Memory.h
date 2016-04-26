@@ -13,7 +13,4 @@ namespace Memory {
 	static uint16_t exec[2][9];
 	static uint16_t mem[2][9];
 	static uint16_t write[9];
-
-	uint16_t getContent(uint16_t addr);
-	void storeContent(uint16_t addr, uint16_t data);
 }

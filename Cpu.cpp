@@ -66,17 +66,17 @@ bool CPU::g_step = false;
 
 CPU::CPU_STATE CPU::state;
 
-void CPU::Init(){
+void CPU::Init() {
 
 	//Set our process counter to 0
 	pc = 0;
 
 	//Initialize registers to 0
 	Memory::registers.fill(0);
-	
+
 	//Copy our program into instruction memory
 	std::copy(std::begin(program), std::end(program), std::begin(Memory::instr));
-	
+
 	//Initialize our memory to 0 and setup the data for $a1 in memory
 	Memory::data.fill(0);
 	Memory::data[16] = 0x01;
@@ -90,24 +90,34 @@ void CPU::Init(){
 	Memory::data[24] = 0x00;
 	Memory::data[25] = 0xFF;
 
-	//Set step based on user input
-	g_step = true;
+	printf("Enable Step Mode? (y/n then enter): ");
+	char opt = getchar();
+	PrintState(); //Print the initial memory as per project requirements
+	getchar();
+	if (opt == 'y'){
+		g_step = true;
+	}
+	else {
+		g_step = false;
+	}
 
 	state = RUN;
-	PrintState(); //Print the initial memory as per project requirements
 	Run();
 }
 
 void CPU::PrintState() {
 	system("cls"); //Clearing console with Windows only function. If compiled elsewhere, it will fail.
 	if (state == EXIT) {
-		printf("---------FINISHED---------\n");
+		printf("------------FINISHED----------\n");
+	}
+	else if(pc == 0) {
+		printf("-------------INITIAL----------\n");
 	}
 	else {
-		printf("--------------------------\n");
+		printf("------------------------------\n");
 	}
 	printf("|     PC: %04X | Instr: %02X%02X |\n", pc, Memory::instr[pc], Memory::instr[pc + 1]);
-	printf("--------------------------\n");
+	printf("------------------------------\n");
 
 	printf("-------------------------\n");
 	printf("| REGISTER FILE \t | \n");
@@ -340,7 +350,7 @@ void CPU::writeback() {
 
 void CPU::resolve(){
 	/*IF/ID Data Hazard*/
-	if (Memory::decode[1][6] == 0x7 //If OPCode == LW, it's our only mem_read
+	if (Memory::decode[1][OPCODE] == 0x7 //If OPCode == LW, it's our only mem_read
 		&& (Memory::decode[1][TREG] == Memory::fetch[0] || Memory::decode[1][TREG] == Memory::fetch[1])){
 		for (int i = 0; i < 6; i++){
 			Memory::fetch[i] = 0;
